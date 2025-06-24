@@ -29,14 +29,3 @@ def _load_jupyter_server_extension(serverapp: ServerApp):
     schema_path = pathlib.Path(__file__).parent / "events" / "jupyterlab-command.yml"
     serverapp.event_logger.register_event_schema(schema_path)
     serverapp.log.info("jupyterlab_commands_toolkit extension loaded.")
-
-
-async def _start_jupyter_server_extension(serverapp: ServerApp):
-    registry = serverapp.web_app.settings["toolkit_registry"]
-    if registry:
-        tools = ToolSet(TOOLS)
-        registry.register_toolkit(
-            Toolkit(
-                name="jupyterlab_commands", tools=tools
-            )
-        )

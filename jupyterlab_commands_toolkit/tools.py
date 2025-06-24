@@ -1,6 +1,10 @@
 from typing import Literal, Optional
 from jupyter_server.serverapp import ServerApp
 from jupyter_server_ai_tools.models import Tool
+from jupyter_server.base.call_context import CallContext
+
+handler = CallContext.get(CallContext.JUPYTER_HANDLER)
+
 
 
 def emit(data): 
@@ -11,11 +15,6 @@ def emit(data):
         schema_id="https://events.jupyter.org/jupyterlab_command_toolkit/lab_command/v1", 
         data=data
     )
-    # server.event_logger.emit(
-    #     schema_id="https://events.jupyter.org/jupyterlab_command_toolkit/lab_command/v1", 
-    #     data=data
-    # )
-    print("SEEN!")
 
 
 INSERT_MODE = Literal['split-top', 'split-left', 'split-right', 'split-bottom', 'merge-top', 'merge-left', 'merge-right', 'merge-bottom', 'tab-before', 'tab-after']
@@ -127,7 +126,7 @@ def open_markdown_file_in_preview_mode(relative_path: str, mode: Optional[INSERT
     })
 
 
-def clear_all_outputs_in_notebook() -> None:
+def clear_all_outputs_in_notebook(run: bool) -> None:
     """
     Clear all outputs in the active notebook.
     
@@ -135,6 +134,9 @@ def clear_all_outputs_in_notebook() -> None:
     emitting a 'notebook:clear-all-cell-outputs' command. This is useful for 
     cleaning up notebook outputs before sharing or when outputs are no longer 
     needed.
+    
+    Args:
+        run (bool): Run this command.
     
     Returns:
         None: This function doesn't return a value. It emits an event to JupyterLab
@@ -156,10 +158,45 @@ def clear_all_outputs_in_notebook() -> None:
     })
 
 
+def show_diff_of_current_notebook(run: bool) -> None:
+    """
+    Show git diff of the current notebook in JupyterLab.
+    
+    This function displays the git differences for the currently active notebook
+    by emitting an 'nbdime:diff-git' command. It uses nbdime (Jupyter notebook
+    diff tool) to show a visual comparison between the current notebook state
+    and the last committed version in git.
+    
+    Args:
+        run (bool): Run this command.
+    
+    Returns:
+        None: This function doesn't return a value. It emits an event to JupyterLab
+        to trigger the notebook diff display.
+        
+    Examples:
+        >>> show_diff_of_current_notebook(True)  # Show git diff for current notebook
+    
+    Note:
+        - This function only works when a notebook is currently active/focused
+        - Requires the nbdime extension to be installed and enabled in JupyterLab
+        - The notebook must be in a git repository for diffs to be meaningful
+        - Shows differences between current state and last git commit
+        - Displays both content and output differences in a visual format
+        - Useful for reviewing changes before committing notebook modifications
+    """
+    emit({
+        "name": "nbdime:diff-git",
+        "args": {}
+    })
+
+
+
 TOOLS = {
     Tool(callable=open_document, read=True),
     Tool(callable=open_markdown_file_in_preview_mode, read=True),
-    # Tool(callable=clear_all_outputs_in_notebook, read=True)
+    Tool(callable=clear_all_outputs_in_notebook, read=True),
+    Tool(callable=show_diff_of_current_notebook, read=True),
 }
 
 
