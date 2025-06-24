@@ -1,0 +1,14 @@
+"$id": https://events.jupyter.org/jupyterlab_command_toolkit/lab_command/v1
+version: 1
+title: A JupyterLab Command to Execute
+personal-data: true
+description: |
+  A JupyterLab Command to execute
+type: object
+required:
+  - name
+properties:
+  name: 
+    type: string
+  args:
+    type: object
