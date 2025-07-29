@@ -8,9 +8,17 @@ This extension is composed of a Python package named `jupyterlab_commands_toolki
 for the server extension and a NPM package named `jupyterlab-commands-toolkit`
 for the frontend extension.
 
+## Features
+
+- **Document Management**: Open documents in JupyterLab with various layout modes
+- **Markdown Preview**: Open markdown files in rendered preview mode
+- **Notebook Operations**: Clear outputs and show diffs for notebooks
+- **Jupyter AI Integration**: Tools available for use with Jupyter AI
+
 ## Requirements
 
 - JupyterLab >= 4.0.0
+- jupyter-ai (for AI toolkit functionality)
 
 ## Install
 
@@ -18,6 +26,49 @@ To install the extension, execute:
 
 ```bash
 pip install jupyterlab_commands_toolkit
+```
+
+## Usage
+
+### With Jupyter AI
+
+The extension provides a toolkit for Jupyter AI with the following tools:
+
+1. **open_document_tool**: Open documents in JupyterLab with various layout modes
+2. **open_markdown_preview_tool**: Open markdown files in rendered preview mode  
+3. **clear_notebook_outputs_tool**: Clear all outputs in the active notebook
+4. **show_notebook_diff_tool**: Show git diff for the current notebook using nbdime
+
+```python
+# Access the AI toolkit
+from jupyterlab_commands_toolkit import ai_toolkit
+
+# The toolkit is automatically available to Jupyter AI when installed
+```
+
+### Direct Usage
+
+You can also use the commands directly:
+
+```python
+from jupyterlab_commands_toolkit.tools import (
+    open_document,
+    open_markdown_file_in_preview_mode,
+    clear_all_outputs_in_notebook,
+    show_diff_of_current_notebook
+)
+
+# Open a document
+open_document("notebook.ipynb", mode="split-right")
+
+# Open markdown in preview
+open_markdown_file_in_preview_mode("README.md")
+
+# Clear notebook outputs
+clear_all_outputs_in_notebook(True)
+
+# Show notebook diff
+show_diff_of_current_notebook(True)
 ```
 
 ## Uninstall

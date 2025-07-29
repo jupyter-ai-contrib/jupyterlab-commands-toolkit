@@ -9,9 +9,16 @@ except ImportError:
     __version__ = "dev"
 
 import pathlib
-from jupyter_server_ai_tools.models import ToolSet, Toolkit
+
 from jupyter_server.serverapp import ServerApp
-from .tools import TOOLS
+from .toolkit import toolkit
+
+# Export the AI toolkit for jupyter-ai integration
+try:
+    from .toolkit import toolkit as ai_toolkit
+except ImportError:
+    # If jupyter-ai is not available, the AI toolkit won't be available
+    toolkit = None
 
 def _jupyter_labextension_paths():
     return [{

@@ -1,10 +1,5 @@
 from typing import Literal, Optional
 from jupyter_server.serverapp import ServerApp
-from jupyter_server_ai_tools.models import Tool
-from jupyter_server.base.call_context import CallContext
-
-handler = CallContext.get(CallContext.JUPYTER_HANDLER)
-
 
 
 def emit(data): 
@@ -18,7 +13,6 @@ def emit(data):
 
 
 INSERT_MODE = Literal['split-top', 'split-left', 'split-right', 'split-bottom', 'merge-top', 'merge-left', 'merge-right', 'merge-bottom', 'tab-before', 'tab-after']
-
 
 
 def open_document(relative_path: str, mode: Optional[INSERT_MODE] = None) -> None:
@@ -189,14 +183,3 @@ def show_diff_of_current_notebook(run: bool) -> None:
         "name": "nbdime:diff-git",
         "args": {}
     })
-
-
-
-TOOLS = {
-    Tool(callable=open_document, read=True),
-    Tool(callable=open_markdown_file_in_preview_mode, read=True),
-    Tool(callable=clear_all_outputs_in_notebook, read=True),
-    Tool(callable=show_diff_of_current_notebook, read=True),
-}
-
-
