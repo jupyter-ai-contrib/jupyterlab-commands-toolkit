@@ -1,0 +1,22 @@
+"$id": https://events.jupyter.org/jupyterlab_command_toolkit/lab_command_result/v1
+version: 1
+title: A JupyterLab Command Execution Result
+personal-data: true
+description: |
+  Result of a JupyterLab Command execution
+type: object
+required:
+  - requestId
+  - success
+properties:
+  requestId:
+    type: string
+    description: The unique identifier for the command request
+  success:
+    type: boolean
+    description: Whether the command executed successfully
+  result:
+    description: The result data from the command execution
+  error:
+    type: string
+    description: Error message if the command failed
