@@ -35,7 +35,7 @@ pip install jupyterlab_commands_toolkit
 The extension provides a toolkit for Jupyter AI with the following tools:
 
 1. **open_document_tool**: Open documents in JupyterLab with various layout modes
-2. **open_markdown_preview_tool**: Open markdown files in rendered preview mode  
+2. **open_markdown_preview_tool**: Open markdown files in rendered preview mode
 3. **clear_notebook_outputs_tool**: Clear all outputs in the active notebook
 4. **show_notebook_diff_tool**: Show git diff for the current notebook using nbdime
 
