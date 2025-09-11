@@ -10,15 +10,12 @@ for the frontend extension.
 
 ## Features
 
-- **Document Management**: Open documents in JupyterLab with various layout modes
-- **Markdown Preview**: Open markdown files in rendered preview mode
-- **Notebook Operations**: Clear outputs and show diffs for notebooks
-- **Jupyter AI Integration**: Tools available for use with Jupyter AI
+- **Command Discovery**: List all available JupyterLab commands with their metadata
+- **Command Execution**: Execute any JupyterLab command programmatically from Python
 
 ## Requirements
 
-- JupyterLab >= 4.0.0
-- jupyter-ai (for AI toolkit functionality)
+- JupyterLab >= 4.5.0a3
 
 ## Install
 
@@ -30,46 +27,28 @@ pip install jupyterlab_commands_toolkit
 
 ## Usage
 
-### With Jupyter AI
-
-The extension provides a toolkit for Jupyter AI with the following tools:
-
-1. **open_document_tool**: Open documents in JupyterLab with various layout modes
-2. **open_markdown_preview_tool**: Open markdown files in rendered preview mode
-3. **clear_notebook_outputs_tool**: Clear all outputs in the active notebook
-4. **show_notebook_diff_tool**: Show git diff for the current notebook using nbdime
+Use the toolkit to execute any JupyterLab command from Python:
 
 ```python
-# Access the AI toolkit
-from jupyterlab_commands_toolkit import ai_toolkit
+import asyncio
+from jupyterlab_commands_toolkit.tools import execute_command, list_all_commands
 
-# The toolkit is automatically available to Jupyter AI when installed
+# Execute a command (requires running in an async context)
+async def main():
+    # List all available commands
+    commands = await list_all_commands()
+
+    # Toggle the file browser
+    result = await execute_command("filebrowser:toggle-main")
+
+    # Run notebook cells
+    result = await execute_command("notebook:run-all-cells")
+
+# Run in JupyterLab environment
+asyncio.run(main())
 ```
 
-### Direct Usage
-
-You can also use the commands directly:
-
-```python
-from jupyterlab_commands_toolkit.tools import (
-    open_document,
-    open_markdown_file_in_preview_mode,
-    clear_all_outputs_in_notebook,
-    show_diff_of_current_notebook
-)
-
-# Open a document
-open_document("notebook.ipynb", mode="split-right")
-
-# Open markdown in preview
-open_markdown_file_in_preview_mode("README.md")
-
-# Clear notebook outputs
-clear_all_outputs_in_notebook(True)
-
-# Show notebook diff
-show_diff_of_current_notebook(True)
-```
+For a full list of available commands in JupyterLab, refer to the [JupyterLab Command Registry documentation](https://jupyterlab.readthedocs.io/en/latest/user/commands.html#commands-list).
 
 ## Uninstall
 

@@ -1,9 +1,9 @@
-from typing import Optional, Dict, Any
 import asyncio
-import uuid
 import time
-from jupyter_server.serverapp import ServerApp
+import uuid
+from typing import Any, Dict, Optional
 
+from jupyter_server.serverapp import ServerApp
 
 # Store for pending command results
 pending_requests: Dict[str, Dict[str, Any]] = {}
@@ -138,7 +138,7 @@ async def execute_command(command_id: str, args: Optional[dict] = None) -> dict:
         >>> await execute_command("application:toggle-left-area")
         {'success': True, 'result': None}
 
-        >>> await execute_command("filebrowser:open-path", {"path": "/home/user"})
+        >>> await execute_command("docmanager:open", {"path": "notebook.ipynb"})
         {'success': True, 'result': 'opened'}
     """
     if args is None:
