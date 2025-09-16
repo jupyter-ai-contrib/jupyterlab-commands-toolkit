@@ -1,185 +1,146 @@
-from typing import Literal, Optional
+import asyncio
+import time
+import uuid
+from typing import Any, Dict, Optional
+
 from jupyter_server.serverapp import ServerApp
 
+# Store for pending command results
+pending_requests: Dict[str, Dict[str, Any]] = {}
 
-def emit(data): 
+
+def emit(data, wait_for_result=False):
+    """
+    Emit an event to the frontend with optional result waiting.
+
+    Args:
+        data: Event data to emit
+        wait_for_result: Whether to add a request ID for result tracking
+
+    Returns:
+        str: Request ID if wait_for_result is True, None otherwise
+    """
     server = ServerApp.instance()
+
+    # Add request ID if waiting for result
+    request_id = None
+    if wait_for_result:
+        request_id = str(uuid.uuid4())
+        data["requestId"] = request_id
+        pending_requests[request_id] = {
+            "timestamp": time.time(),
+            "data": data,
+            "result": None,
+            "completed": False,
+            "future": asyncio.Future(),
+        }
+
     server.io_loop.call_later(
-        0.1, 
-        server.event_logger.emit,         
-        schema_id="https://events.jupyter.org/jupyterlab_command_toolkit/lab_command/v1", 
-        data=data
+        0.1,
+        server.event_logger.emit,
+        schema_id="https://events.jupyter.org/jupyterlab_command_toolkit/lab_command/v1",
+        data=data,
+    )
+
+    return request_id
+
+
+async def emit_and_wait_for_result(data, timeout=10.0):
+    """
+    Emit a command and wait for its result.
+
+    Args:
+        data: Command data to emit
+        timeout: How long to wait for a result (seconds)
+
+    Returns:
+        dict: Command result from the frontend
+    """
+    request_id = emit(data, wait_for_result=True)
+
+    try:
+        future = pending_requests[request_id]["future"]
+        result = await asyncio.wait_for(future, timeout=timeout)
+        return result
+    except asyncio.TimeoutError:
+        return {
+            "success": False,
+            "error": f"Command timed out after {timeout} seconds",
+            "request_id": request_id,
+        }
+    finally:
+        pending_requests.pop(request_id, None)
+
+
+def handle_command_result(event_data):
+    """Handle incoming command results from the frontend."""
+    request_id = event_data.get("requestId")
+    if request_id and request_id in pending_requests:
+        request_info = pending_requests[request_id]
+        request_info["result"] = event_data
+        request_info["completed"] = True
+
+        future = request_info.get("future")
+        if future and not future.done():
+            future.set_result(event_data)
+
+
+async def list_all_commands() -> dict:
+    """
+    Retrieve a list of all available JupyterLab commands.
+
+    This function emits a request to the JupyterLab frontend to retrieve all
+    registered commands in the application. It waits for the response and
+    returns the complete list of available commands with their metadata.
+
+    Returns:
+        dict: A dictionary containing the command list response from JupyterLab.
+              The structure typically includes:
+              - success (bool): Whether the operation succeeded
+              - commands (list): List of available command objects, with arguments and types
+              - error (str, optional): Error message if the operation failed
+
+    Raises:
+        asyncio.TimeoutError: If the frontend doesn't respond within the timeout period
+    """
+    return await emit_and_wait_for_result(
+        {"name": "jupyterlab-commands-toolkit:list-all-commands", "args": {}}
     )
 
 
-INSERT_MODE = Literal['split-top', 'split-left', 'split-right', 'split-bottom', 'merge-top', 'merge-left', 'merge-right', 'merge-bottom', 'tab-before', 'tab-after']
-
-
-def open_document(relative_path: str, mode: Optional[INSERT_MODE] = None) -> None:
+async def execute_command(command_id: str, args: Optional[dict] = None) -> dict:
     """
-    Open a document in JupyterLab.
-    
-    This function opens a document at the specified path in JupyterLab by emitting
-    a 'docmanager:open' command. The document can be opened in various modes that
-    control how it's displayed relative to existing open documents.
-    
+    Execute a JupyterLab command with optional arguments.
+
+    This function sends a command execution request to the JupyterLab frontend
+    and waits for the result. The command is identified by its unique command_id
+    and can be parameterized with optional arguments.
+
     Args:
-        relative_path (str): The relative path to the document to open.
-            This should be relative to the Jupyter server's root directory.
-            Examples: 'notebook.ipynb', 'folder/script.py', 'data.csv'
-            
-        mode (Optional[INSERT_MODE], optional): The mode specifying how to open
-            the document. Defaults to None, which opens in the default manner.
-            Available modes:
-            - 'split-top': Split the current area and open above
-            - 'split-left': Split the current area and open to the left
-            - 'split-right': Split the current area and open to the right
-            - 'split-bottom': Split the current area and open below
-            - 'merge-top': Merge with the area above
-            - 'merge-left': Merge with the area to the left
-            - 'merge-right': Merge with the area to the right
-            - 'merge-bottom': Merge with the area below
-            - 'tab-before': Open as a tab before the current tab
-            - 'tab-after': Open as a tab after the current tab
-    
+        command_id (str): The unique identifier of the JupyterLab command to execute.
+                         This should be a valid command ID registered in JupyterLab.
+        args (Optional[dict], optional): A dictionary of arguments to pass to the
+                                       command. Defaults to None, which is converted
+                                       to an empty dictionary.
+
     Returns:
-        None: This function doesn't return a value. It emits an event to JupyterLab
-        to trigger the document opening action.
-        
+        dict: A dictionary containing the command execution response from JupyterLab.
+              The structure typically includes:
+              - success (bool): Whether the command executed successfully
+              - result (any): The return value from the executed command
+              - error (str, optional): Error message if the command failed
+              - request_id (str): The unique identifier for this request
+
+    Raises:
+        asyncio.TimeoutError: If the frontend doesn't respond within the timeout period
+
     Examples:
-        >>> open_document('notebook.ipynb')  # Open notebook in default mode
-        >>> open_document('script.py', mode='split-right')  # Open script in right split
-        >>> open_document('data/analysis.csv', mode='tab-after')  # Open CSV as new tab
-    
-    Note:
-        This function requires a running Jupyter server instance and emits events
-        using the JupyterLab command toolkit event schema.
-    """
-    emit({
-        "name": "docmanager:open",
-        "args": {
-            "path": relative_path,
-            "options": {
-                "mode": mode
-            }
-        }
-    })
+        >>> await execute_command("application:toggle-left-area")
+        {'success': True, 'result': None}
 
-
-def open_markdown_file_in_preview_mode(relative_path: str, mode: Optional[INSERT_MODE] = None) -> None:
+        >>> await execute_command("docmanager:open", {"path": "notebook.ipynb"})
+        {'success': True, 'result': 'opened'}
     """
-    Open a markdown file in preview mode in JupyterLab.
-    
-    This function opens a markdown file (.md) in rendered preview mode rather than
-    as an editable text file. It emits a 'markdownviewer:open' command to display
-    the markdown content with proper formatting, headers, links, and styling.
-    
-    Args:
-        relative_path (str): The relative path to the markdown file to open in preview.
-            This should be relative to the Jupyter server's root directory and
-            typically should have a .md extension.
-            Examples: 'README.md', 'docs/guide.md', 'notes/meeting-notes.md'
-            
-        mode (Optional[INSERT_MODE], optional): The mode specifying how to open
-            the preview. Defaults to None, which opens in the default manner.
-            Available modes:
-            - 'split-top': Split the current area and open preview above
-            - 'split-left': Split the current area and open preview to the left
-            - 'split-right': Split the current area and open preview to the right
-            - 'split-bottom': Split the current area and open preview below
-            - 'merge-top': Merge with the area above
-            - 'merge-left': Merge with the area to the left
-            - 'merge-right': Merge with the area to the right
-            - 'merge-bottom': Merge with the area below
-            - 'tab-before': Open as a tab before the current tab
-            - 'tab-after': Open as a tab after the current tab
-    
-    Returns:
-        None: This function doesn't return a value. It emits an event to JupyterLab
-        to trigger the markdown preview opening action.
-        
-    Examples:
-        >>> open_markdown_file_in_preview_mode('README.md')  # Open README in preview
-        >>> open_markdown_file_in_preview_mode('docs/api.md', mode='split-right')  # Preview in right split
-        >>> open_markdown_file_in_preview_mode('changelog.md', mode='tab-after')  # Preview in new tab
-    
-    Note:
-        - This function specifically opens markdown files in rendered preview mode
-        - Use open_document() instead if you want to edit the markdown source
-        - Requires a running Jupyter server with markdown preview extension
-        - The file should typically have a .md or .markdown extension
-    """
-    emit({
-        "name": "markdownviewer:open",
-        "args": {
-            "path": relative_path,
-            "options": {
-                "mode": mode
-            }
-        }
-    })
-
-
-def clear_all_outputs_in_notebook(run: bool) -> None:
-    """
-    Clear all outputs in the active notebook.
-    
-    This function clears all cell outputs in the currently active notebook by 
-    emitting a 'notebook:clear-all-cell-outputs' command. This is useful for 
-    cleaning up notebook outputs before sharing or when outputs are no longer 
-    needed.
-    
-    Args:
-        run (bool): Run this command.
-    
-    Returns:
-        None: This function doesn't return a value. It emits an event to JupyterLab
-        to trigger the clear all outputs action.
-        
-    Examples:
-        >>> clear_all_outputs_in_notebook()  # Clear all outputs in current notebook
-    
-    Note:
-        - This function only works when a notebook is currently active/focused
-        - All cell outputs (including text, images, plots, etc.) will be cleared
-        - The cell source code remains unchanged, only outputs are removed
-        - This action cannot be undone, so use with caution
-        - Requires an active notebook session in JupyterLab
-    """
-    emit({
-        "name": "notebook:clear-all-cell-outputs",
-        "args": {}
-    })
-
-
-def show_diff_of_current_notebook(run: bool) -> None:
-    """
-    Show git diff of the current notebook in JupyterLab.
-    
-    This function displays the git differences for the currently active notebook
-    by emitting an 'nbdime:diff-git' command. It uses nbdime (Jupyter notebook
-    diff tool) to show a visual comparison between the current notebook state
-    and the last committed version in git.
-    
-    Args:
-        run (bool): Run this command.
-    
-    Returns:
-        None: This function doesn't return a value. It emits an event to JupyterLab
-        to trigger the notebook diff display.
-        
-    Examples:
-        >>> show_diff_of_current_notebook(True)  # Show git diff for current notebook
-    
-    Note:
-        - This function only works when a notebook is currently active/focused
-        - Requires the nbdime extension to be installed and enabled in JupyterLab
-        - The notebook must be in a git repository for diffs to be meaningful
-        - Shows differences between current state and last git commit
-        - Displays both content and output differences in a visual format
-        - Useful for reviewing changes before committing notebook modifications
-    """
-    emit({
-        "name": "nbdime:diff-git",
-        "args": {}
-    })
+    if args is None:
+        args = {}
+    return await emit_and_wait_for_result({"name": command_id, "args": args})
