@@ -1,6 +1,6 @@
 {
     "name": "jupyterlab-commands-toolkit",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "A Jupyter extension that provides an AI toolkit for JupyterLab commands.",
     "keywords": [
         "jupyter",
