@@ -103,7 +103,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
       describedBy: {
         args: {}
       },
-      execute: async () => {
+      execute: async (args: any) => {
+        const query = args['query'] as string | undefined;
+
         const commandList: Array<{
           id: string;
           label?: string;
@@ -112,23 +114,45 @@ const plugin: JupyterFrontEndPlugin<void> = {
           args?: any;
         }> = [];
 
+        // Get all command IDs
         const commandIds = commands.listCommands();
 
         for (const id of commandIds) {
+          // Get command metadata using various CommandRegistry methods
           const description = await commands.describedBy(id);
           const label = commands.label(id);
           const caption = commands.caption(id);
           const usage = commands.usage(id);
 
-          commandList.push({
+          const command = {
             id,
             label: label || undefined,
             caption: caption || undefined,
             description: usage || undefined,
             args: description?.args || undefined
-          });
+          };
+
+          // Filter by query if provided
+          if (query) {
+            const searchTerm = query.toLowerCase();
+            const matchesQuery =
+              id.toLowerCase().includes(searchTerm) ||
+              label?.toLowerCase().includes(searchTerm) ||
+              caption?.toLowerCase().includes(searchTerm) ||
+              usage?.toLowerCase().includes(searchTerm);
+
+            if (matchesQuery) {
+              commandList.push(command);
+            }
+          } else {
+            commandList.push(command);
+          }
         }
-        return commandList;
+        return {
+          success: true,
+          commandCount: commandList.length,
+          commands: commandList
+        };
       }
     });
   }
