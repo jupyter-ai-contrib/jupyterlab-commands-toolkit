@@ -8,6 +8,12 @@ from jupyter_server.serverapp import ServerApp
 # Store for pending command results
 pending_requests: Dict[str, Dict[str, Any]] = {}
 
+# Tools list for jupyter-server-mcp entrypoint discovery
+TOOLS = [
+    "jupyterlab_commands_toolkit.tools:list_all_commands",
+    "jupyterlab_commands_toolkit.tools:execute_command",
+]
+
 
 def emit(data, wait_for_result=False):
     """

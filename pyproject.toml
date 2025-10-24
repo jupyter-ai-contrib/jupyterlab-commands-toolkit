@@ -28,6 +28,12 @@ dependencies = [
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]
 
+[project.optional-dependencies]
+mcp = ["jupyter-server-mcp>=0.1.2"]
+
+[project.entry-points."jupyter_server_mcp.tools"]
+jupyterlab_commands_toolkit = "jupyterlab_commands_toolkit.tools:TOOLS"
+
 [tool.hatch.version]
 source = "nodejs"
 
