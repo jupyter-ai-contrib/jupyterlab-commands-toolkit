@@ -85,7 +85,7 @@ def handle_command_result(event_data):
             future.set_result(event_data)
 
 
-async def list_all_commands() -> dict:
+async def list_all_commands(query: str) -> dict:
     """
     Retrieve a list of all available JupyterLab commands.
 
@@ -104,7 +104,7 @@ async def list_all_commands() -> dict:
         asyncio.TimeoutError: If the frontend doesn't respond within the timeout period
     """
     return await emit_and_wait_for_result(
-        {"name": "jupyterlab-commands-toolkit:list-all-commands", "args": {}}
+        {"name": "jupyterlab-commands-toolkit:list-all-commands", "args": {"query": query}}
     )
 
 
