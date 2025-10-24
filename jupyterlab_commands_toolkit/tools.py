@@ -85,7 +85,7 @@ def handle_command_result(event_data):
             future.set_result(event_data)
 
 
-async def list_all_commands(query: str) -> dict:
+async def list_all_commands(query: Optional[str] = None) -> dict:
     """
     Retrieve a list of all available JupyterLab commands.
 
@@ -93,18 +93,45 @@ async def list_all_commands(query: str) -> dict:
     registered commands in the application. It waits for the response and
     returns the complete list of available commands with their metadata.
 
+    Args:
+        query (Optional[str], optional): An optional search query to filter commands.
+                                        When provided, only commands whose ID, label,
+                                        caption, or description contain the query string
+                                        (case-insensitive) will be returned. If None or
+                                        omitted, all commands will be returned.
+                                        Defaults to None.
+
     Returns:
         dict: A dictionary containing the command list response from JupyterLab.
               The structure typically includes:
               - success (bool): Whether the operation succeeded
-              - commands (list): List of available command objects, with arguments and types
+              - commandCount (int): Number of commands returned
+              - commands (list): List of available command objects, each with:
+                  - id (str): The command identifier
+                  - label (str, optional): Human-readable command label
+                  - caption (str, optional): Short description
+                  - description (str, optional): Detailed usage information
+                  - args (dict, optional): Command argument schema
               - error (str, optional): Error message if the operation failed
 
     Raises:
         asyncio.TimeoutError: If the frontend doesn't respond within the timeout period
+
+    Examples:
+        >>> # Get all commands
+        >>> await list_all_commands()
+        {'success': True, 'commandCount': 150, 'commands': [...]}
+
+        >>> # Filter commands by query
+        >>> await list_all_commands(query="notebook")
+        {'success': True, 'commandCount': 25, 'commands': [...]}
     """
+    args = {}
+    if query is not None:
+        args["query"] = query
+
     return await emit_and_wait_for_result(
-        {"name": "jupyterlab-commands-toolkit:list-all-commands", "args": {"query": query}}
+        {"name": "jupyterlab-commands-toolkit:list-all-commands", "args": args}
     )
 
 
