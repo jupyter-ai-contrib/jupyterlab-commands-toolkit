@@ -56,10 +56,6 @@ The following tools will be automatically available:
 - `list_all_commands` - List all available JupyterLab commands with their metadata
 - `execute_command` - Execute any JupyterLab command programmatically
 
-For more configuration options and examples, see:
-- The included [jupyter_config_mcp_example.py](jupyter_config_mcp_example.py) file
-- The [jupyter-server-mcp documentation](https://github.com/jupyter-ai-contrib/jupyter-server-mcp#readme)
-
 ### Direct Python Usage
 
 Use the toolkit directly from Python to execute JupyterLab commands:
