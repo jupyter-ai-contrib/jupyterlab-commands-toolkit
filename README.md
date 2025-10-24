@@ -12,6 +12,7 @@ for the frontend extension.
 
 - **Command Discovery**: List all available JupyterLab commands with their metadata
 - **Command Execution**: Execute any JupyterLab command programmatically from Python
+- **MCP Integration**: Automatically exposes tools to AI assistants via [jupyter-server-mcp](https://github.com/jupyter-ai-contrib/jupyter-server-mcp)
 
 ## Requirements
 
@@ -25,9 +26,43 @@ To install the extension, execute:
 pip install jupyterlab_commands_toolkit
 ```
 
+To install with `jupyter-server-mcp` integration support:
+
+```bash
+pip install jupyterlab_commands_toolkit[mcp]
+```
+
 ## Usage
 
-Use the toolkit to execute any JupyterLab command from Python:
+### With jupyter-server-mcp (Recommended)
+
+This extension automatically registers its tools with [jupyter-server-mcp](https://github.com/jupyter-ai-contrib/jupyter-server-mcp) via Python entrypoints, making them available to AI assistants and other MCP clients.
+
+1. Install both packages:
+
+```bash
+pip install jupyterlab_commands_toolkit[mcp]
+```
+
+2. Start Jupyter Lab (the MCP server starts automatically):
+
+```bash
+jupyter lab
+```
+
+3. Configure your MCP client (e.g., Claude Desktop) to connect to `http://localhost:3001/mcp`
+
+The following tools will be automatically available:
+- `list_all_commands` - List all available JupyterLab commands with their metadata
+- `execute_command` - Execute any JupyterLab command programmatically
+
+For more configuration options and examples, see:
+- The included [jupyter_config_mcp_example.py](jupyter_config_mcp_example.py) file
+- The [jupyter-server-mcp documentation](https://github.com/jupyter-ai-contrib/jupyter-server-mcp#readme)
+
+### Direct Python Usage
+
+Use the toolkit directly from Python to execute JupyterLab commands:
 
 ```python
 import asyncio
