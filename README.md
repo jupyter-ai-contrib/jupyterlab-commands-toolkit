@@ -53,6 +53,7 @@ jupyter lab
 3. Configure your MCP client (e.g., Claude Desktop) to connect to `http://localhost:3001/mcp`
 
 The following tools will be automatically available:
+
 - `list_all_commands` - List all available JupyterLab commands with their metadata
 - `execute_command` - Execute any JupyterLab command programmatically
 
