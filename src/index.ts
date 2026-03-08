@@ -119,7 +119,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
         for (const id of commandIds) {
           // Get command metadata using various CommandRegistry methods
-          const description = await commands.describedBy(id);
+          const description = await Promise.resolve().then(()=>commands.describedBy(id)).catch(()=>null);
           const label = commands.label(id);
           const caption = commands.caption(id);
           const usage = commands.usage(id);
