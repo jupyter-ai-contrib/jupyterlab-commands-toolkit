@@ -119,12 +119,31 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
         for (const id of commandIds) {
           // Get command metadata using various CommandRegistry methods
-          const description = await commands
-            .describedBy(id)
-            .catch(console.warn);
-          const label = commands.label(id);
-          const caption = commands.caption(id);
-          const usage = commands.usage(id);
+          // Wrap each call in try/catch since some commands throw internally
+          let description: any = null;
+          let label = '';
+          let caption = '';
+          let usage = '';
+          try {
+            description = await commands.describedBy(id);
+          } catch (e) {
+            console.warn(`Failed to get describedBy for command "${id}":`, e);
+          }
+          try {
+            label = commands.label(id);
+          } catch (e) {
+            console.warn(`Failed to get label for command "${id}":`, e);
+          }
+          try {
+            caption = commands.caption(id);
+          } catch (e) {
+            console.warn(`Failed to get caption for command "${id}":`, e);
+          }
+          try {
+            usage = commands.usage(id);
+          } catch (e) {
+            console.warn(`Failed to get usage for command "${id}":`, e);
+          }
 
           const command = {
             id,
