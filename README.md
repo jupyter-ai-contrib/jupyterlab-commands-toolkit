@@ -59,15 +59,15 @@ The following tools will be automatically available:
 - `list_all_commands` - List all available JupyterLab commands with their metadata
 - `execute_command` - Execute any JupyterLab command programmatically
 
-### Direct Python Usage
+### Server-Side Python Usage
 
-Use the toolkit directly from Python to execute JupyterLab commands:
+Use the toolkit directly from server-side Python to execute JupyterLab commands.
+These functions must run in the initialized Jupyter Server process, such as via
+`jupyter-server-mcp` or another server extension.
 
 ```python
-import asyncio
 from jupyterlab_commands_toolkit.tools import execute_command, list_all_commands
 
-# Execute a command (requires running in an async context)
 async def main():
     # List all available commands
     commands = await list_all_commands()
@@ -77,9 +77,6 @@ async def main():
 
     # Run notebook cells
     result = await execute_command("notebook:run-all-cells")
-
-# Run in JupyterLab environment
-asyncio.run(main())
 ```
 
 For a full list of available commands in JupyterLab, refer to the [JupyterLab Command Registry documentation](https://jupyterlab.readthedocs.io/en/latest/user/commands.html#commands-list).

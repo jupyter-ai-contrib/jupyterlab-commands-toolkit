@@ -57,8 +57,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           if (
             commandResult &&
             typeof commandResult === 'object' &&
-            (commandResult.constructor?.name?.includes('Widget') ||
-              commandResult.id)
+            commandResult.constructor?.name?.includes('Widget')
           ) {
             serializedResult = {
               type: commandResult.constructor?.name || 'Widget',

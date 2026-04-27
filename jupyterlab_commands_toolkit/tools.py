@@ -38,7 +38,7 @@ def emit(data, wait_for_result=False):
             "data": data,
             "result": None,
             "completed": False,
-            "future": asyncio.Future(),
+            "future": asyncio.get_running_loop().create_future(),
         }
 
     server.io_loop.call_later(
@@ -120,9 +120,6 @@ async def list_all_commands(query: Optional[str] = None) -> dict:
                   - args (dict, optional): Command argument schema
               - error (str, optional): Error message if the operation failed
 
-    Raises:
-        asyncio.TimeoutError: If the frontend doesn't respond within the timeout period
-
     Examples:
         >>> # Get all commands
         >>> await list_all_commands()
@@ -163,9 +160,6 @@ async def execute_command(command_id: str, args: Optional[dict] = None) -> dict:
               - result (any): The return value from the executed command
               - error (str, optional): Error message if the command failed
               - request_id (str): The unique identifier for this request
-
-    Raises:
-        asyncio.TimeoutError: If the frontend doesn't respond within the timeout period
 
     Examples:
         >>> await execute_command("application:toggle-left-area")

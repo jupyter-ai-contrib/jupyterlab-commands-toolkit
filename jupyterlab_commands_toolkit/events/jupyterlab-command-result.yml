@@ -1,5 +1,5 @@
 "$id": https://events.jupyter.org/jupyterlab_command_toolkit/lab_command_result/v1
-version: 1
+version: "1"
 title: A JupyterLab Command Execution Result
 personal-data: true
 description: |
