@@ -1,6 +1,8 @@
 # jupyterlab_commands_toolkit
 
 [![Github Actions Status](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/workflows/Build/badge.svg)](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/actions/workflows/build.yml)
+[![PyPI version](https://img.shields.io/pypi/v/jupyterlab-commands-toolkit.svg)](https://pypi.org/project/jupyterlab-commands-toolkit/)
+[![conda-forge version](https://img.shields.io/conda/vn/conda-forge/jupyterlab-commands-toolkit.svg)](https://anaconda.org/conda-forge/jupyterlab-commands-toolkit)
 
 A Jupyter extension that provides an AI toolkit for JupyterLab commands.
 

@@ -34,10 +34,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
   autoStart: true,
   requires: [IEventListener],
   activate: (app: JupyterFrontEnd, eventListener: IEventListener) => {
-    console.log(
-      'JupyterLab extension jupyterlab-commands-toolkit is activated 2342521263!'
-    );
-
     const { commands } = app;
 
     eventListener.addListener(
