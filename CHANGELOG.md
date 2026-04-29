@@ -2,6 +2,29 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.1.6
+
+([Full Changelog](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/compare/v0.1.5...65e2b298f327bdb4f0524c3f170c8203e7e737e8))
+
+### Maintenance and upkeep improvements
+
+- Minor cleanup and fixes [#14](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/pull/14) ([@jtpio](https://github.com/jtpio), [@Zsailer](https://github.com/Zsailer))
+
+### Documentation improvements
+
+- Add badges to the README [#13](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/pull/13) ([@jtpio](https://github.com/jtpio))
+
+### Contributors to this release
+
+The following people contributed discussions, new ideas, code and documentation contributions, and review.
+See [our definition of contributors](https://github-activity.readthedocs.io/en/latest/use/#how-does-this-tool-define-contributions-in-the-reports).
+
+([GitHub contributors page for this release](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/graphs/contributors?from=2026-04-02&to=2026-04-29&type=c))
+
+@jtpio ([activity](https://github.com/search?q=repo%3Ajupyter-ai-contrib%2Fjupyterlab-commands-toolkit+involves%3Ajtpio+updated%3A2026-04-02..2026-04-29&type=Issues)) | @Zsailer ([activity](https://github.com/search?q=repo%3Ajupyter-ai-contrib%2Fjupyterlab-commands-toolkit+involves%3AZsailer+updated%3A2026-04-02..2026-04-29&type=Issues))
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.1.5
 
 ([Full Changelog](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/compare/v0.1.4...32f54d20ccb2a89b812b716f0208935962a45777))
@@ -18,8 +41,6 @@ See [our definition of contributors](https://github-activity.readthedocs.io/en/l
 ([GitHub contributors page for this release](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/graphs/contributors?from=2026-03-30&to=2026-04-02&type=c))
 
 @vincentye38 ([activity](https://github.com/search?q=repo%3Ajupyter-ai-contrib%2Fjupyterlab-commands-toolkit+involves%3Avincentye38+updated%3A2026-03-30..2026-04-02&type=Issues)) | @Zsailer ([activity](https://github.com/search?q=repo%3Ajupyter-ai-contrib%2Fjupyterlab-commands-toolkit+involves%3AZsailer+updated%3A2026-03-30..2026-04-02&type=Issues))
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.1.4
 
