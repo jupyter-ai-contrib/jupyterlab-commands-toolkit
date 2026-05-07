@@ -81,6 +81,35 @@ async def main():
 
 For a full list of available commands in JupyterLab, refer to the [JupyterLab Command Registry documentation](https://jupyterlab.readthedocs.io/en/latest/user/commands.html#commands-list).
 
+## Restricting which commands are listed
+
+JupyterLab registers several hundred commands by default, which can be a lot of
+noise when an agent calls `list_all_commands`. To narrow the surface, the
+extension exposes two settings under the plugin id
+`jupyterlab-commands-toolkit:plugin`:
+
+- `allowedPatterns` — glob patterns matched against command IDs. If non-empty,
+  only commands whose ID matches at least one pattern are returned.
+- `deniedPatterns` — glob patterns excluded from the result, applied after
+  `allowedPatterns`.
+
+Both support `*` (any sequence) and `?` (single character). Empty arrays mean
+"no restriction", which preserves the previous default behavior.
+
+The settings can be edited from the JupyterLab Settings Editor, or shipped as
+defaults via `etc/jupyter/labconfig/default_setting_overrides.d/<n>-jupyterlab-commands-toolkit.json`:
+
+```json
+{
+  "jupyterlab-commands-toolkit:plugin": {
+    "allowedPatterns": ["notebook:*", "docmanager:*", "filebrowser:*"]
+  }
+}
+```
+
+The filter is applied to `list_all_commands` only; `execute_command` still runs
+any command the JupyterLab application accepts.
+
 ## Uninstall
 
 To remove the extension, execute:
