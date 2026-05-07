@@ -3,7 +3,10 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 import { Event } from '@jupyterlab/services';
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { IEventListener } from 'jupyterlab-eventlistener';
+
+const PLUGIN_ID = 'jupyterlab-commands-toolkit:plugin';
 
 const JUPYTERLAB_COMMAND_SCHEMA_ID =
   'https://events.jupyter.org/jupyterlab_command_toolkit/lab_command/v1';
@@ -24,17 +27,82 @@ type JupyterLabCommandResult = {
   error?: string;
 };
 
+// Translate a glob pattern (`*`, `?`) into an anchored RegExp.
+function globToRegex(pattern: string): RegExp {
+  const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+  const regexPattern = escaped.replace(/\*/g, '.*').replace(/\?/g, '.');
+  return new RegExp(`^${regexPattern}$`, 'u');
+}
+
+function compilePatterns(patterns: ReadonlyArray<unknown>): RegExp[] {
+  const result: RegExp[] = [];
+  for (const pattern of patterns) {
+    if (typeof pattern !== 'string' || pattern.length === 0) {
+      continue;
+    }
+    try {
+      result.push(globToRegex(pattern));
+    } catch (e) {
+      console.warn(`[${PLUGIN_ID}] Failed to compile pattern "${pattern}":`, e);
+    }
+  }
+  return result;
+}
+
+function isAllowed(id: string, allowed: RegExp[], denied: RegExp[]): boolean {
+  if (allowed.length > 0 && !allowed.some(re => re.test(id))) {
+    return false;
+  }
+  if (denied.some(re => re.test(id))) {
+    return false;
+  }
+  return true;
+}
+
 /**
  * Initialization data for the jupyterlab-commands-toolkit extension.
  */
 const plugin: JupyterFrontEndPlugin<void> = {
-  id: 'jupyterlab-commands-toolkit:plugin',
+  id: PLUGIN_ID,
   description:
     'A Jupyter extension that provides an AI toolkit for JupyterLab commands.',
   autoStart: true,
   requires: [IEventListener],
-  activate: (app: JupyterFrontEnd, eventListener: IEventListener) => {
+  optional: [ISettingRegistry],
+  activate: (
+    app: JupyterFrontEnd,
+    eventListener: IEventListener,
+    settingRegistry: ISettingRegistry | null
+  ) => {
     const { commands } = app;
+
+    // Empty until settings load resolves — fail-open so list_all_commands
+    // returns everything if it fires before the async load completes.
+    let allowedRegexes: RegExp[] = [];
+    let deniedRegexes: RegExp[] = [];
+
+    const refreshFromSettings = (settings: ISettingRegistry.ISettings) => {
+      const allowed = settings.get('allowedPatterns').composite as
+        | unknown[]
+        | undefined;
+      const denied = settings.get('deniedPatterns').composite as
+        | unknown[]
+        | undefined;
+      allowedRegexes = compilePatterns(allowed ?? []);
+      deniedRegexes = compilePatterns(denied ?? []);
+    };
+
+    if (settingRegistry) {
+      settingRegistry
+        .load(PLUGIN_ID)
+        .then(settings => {
+          refreshFromSettings(settings);
+          settings.changed.connect(refreshFromSettings);
+        })
+        .catch(err => {
+          console.error(`[${PLUGIN_ID}] Failed to load settings:`, err);
+        });
+    }
 
     eventListener.addListener(
       JUPYTERLAB_COMMAND_SCHEMA_ID,
@@ -109,8 +177,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
           args?: any;
         }> = [];
 
-        // Get all command IDs
-        const commandIds = commands.listCommands();
+        // Get all command IDs and apply the configured allow/deny filter first,
+        // so we don't waste work fetching metadata for excluded commands.
+        const commandIds = commands
+          .listCommands()
+          .filter(id => isAllowed(id, allowedRegexes, deniedRegexes));
 
         for (const id of commandIds) {
           // Get command metadata using various CommandRegistry methods

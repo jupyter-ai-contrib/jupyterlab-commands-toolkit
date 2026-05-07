@@ -58,6 +58,7 @@
         "@jupyterlab/application": "^4.0.0",
         "@jupyterlab/coreutils": "^6.0.0",
         "@jupyterlab/services": "^7.0.0",
+        "@jupyterlab/settingregistry": "^4.0.0",
         "jupyterlab-eventlistener": "^0.4.0"
     },
     "devDependencies": {
@@ -105,7 +106,8 @@
             }
         },
         "extension": true,
-        "outputDir": "jupyterlab_commands_toolkit/labextension"
+        "outputDir": "jupyterlab_commands_toolkit/labextension",
+        "schemaDir": "schema"
     },
     "eslintIgnore": [
         "node_modules",
