@@ -1,0 +1,28 @@
+{
+  "title": "JupyterLab Commands Toolkit",
+  "description": "Settings for the jupyterlab-commands-toolkit extension.",
+  "type": "object",
+  "properties": {
+    "allowedPatterns": {
+      "type": "array",
+      "title": "Allowed command patterns",
+      "description": "Glob patterns matched against JupyterLab command IDs. Only commands whose ID matches at least one pattern are returned by list_all_commands. If the list is empty, all commands are returned. Supports `*` (any sequence) and `?` (single character) wildcards. Example: [\"notebook:*\", \"docmanager:open*\"].",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": []
+    },
+    "deniedPatterns": {
+      "type": "array",
+      "title": "Denied command patterns",
+      "description": "Glob patterns matched against JupyterLab command IDs. Commands whose ID matches any of these patterns are excluded from list_all_commands, applied after `allowedPatterns`. Supports `*` and `?` wildcards.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": []
+    }
+  },
+  "additionalProperties": false
+}
