@@ -9,7 +9,8 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 export async function callRunCommand(
   port: number,
   webClientId: string,
-  name: string
+  name: string,
+  opts: { args?: Record<string, any>; delay?: number } = {}
 ): Promise<any> {
   const client = new Client({ name: 'ct-e2e', version: '0.0.0' });
   const transport = new StreamableHTTPClientTransport(
@@ -20,7 +21,7 @@ export async function callRunCommand(
   try {
     return await client.callTool({
       name: 'run_command',
-      arguments: { name }
+      arguments: { name, args: opts.args ?? {}, delay: opts.delay ?? 0 }
     });
   } finally {
     await client.close();

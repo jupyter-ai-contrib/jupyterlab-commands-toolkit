@@ -42,9 +42,15 @@ mcp.add_middleware(ClientRoutingMiddleware())
 
 
 @mcp.tool
-async def run_command(name: str) -> dict:
-    """Run a JupyterLab command on the web client bound by the request header."""
-    return await execute_command(name)
+async def run_command(name: str, args: dict | None = None, delay: float = 0.0) -> dict:
+    """Run a JupyterLab command on the web client bound by the request header.
+
+    ``delay`` (seconds) sleeps *while the target_client_id contextvar is set* so
+    tests can force two calls to overlap and prove the contextvar isolates them.
+    """
+    if delay:
+        await asyncio.sleep(delay)
+    return await execute_command(name, args or {})
 
 
 class _EmbeddedServer(uvicorn.Server):
