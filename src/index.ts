@@ -204,6 +204,16 @@ const plugin: JupyterFrontEndPlugin<void> = {
         };
       }
     });
+
+    // Introspection: return this browser tab's web client id. Useful for
+    // debugging multi-client routing (and for E2E tests to learn the id).
+    commands.addCommand('jupyterlab-commands-toolkit:get-web-client-id', {
+      label: 'Get Web Client ID',
+      describedBy: {
+        args: {}
+      },
+      execute: () => WEB_CLIENT_ID
+    });
   }
 };
 

@@ -88,6 +88,63 @@ jobs:
         python -m jupyterlab.browser_check --no-browser-test
 
 
+  e2e:
+    name: E2E tests
+    needs: build
+    runs-on: ubuntu-latest
+
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Base Setup
+      uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+
+    - name: Download extension package
+      uses: actions/download-artifact@v4
+      with:
+        name: extension-artifacts
+
+    - name: Install the extension
+      run: |
+        set -eux
+        python -m pip install "jupyterlab>=4.0.0,<5" jupyterlab_commands_toolkit*.whl
+
+    - name: Restore browser cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/pw-browsers
+        key: ${{ runner.os }}-${{ hashFiles('ui-tests/yarn.lock') }}
+
+    - name: Set up ui-tests deps + browser
+      working-directory: ui-tests
+      env:
+        YARN_ENABLE_IMMUTABLE_INSTALLS: 0
+      run: |
+        set -eux
+        jlpm install
+        jlpm playwright install-deps
+        jlpm playwright install chromium
+
+    - name: Run E2E tests
+      working-directory: ui-tests
+      run: |
+        set -eux
+        jlpm playwright test
+
+    - name: Upload Playwright Test report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: jupyterlab_commands_toolkit-playwright-tests
+        path: |
+          ui-tests/test-results
+          ui-tests/playwright-report
+
   check_links:
     name: Check Links
     runs-on: ubuntu-latest

@@ -120,6 +120,7 @@
         "node_modules",
         "dist",
         "coverage",
+        "ui-tests",
         "**/*.d.ts"
     ],
     "eslintConfig": {
