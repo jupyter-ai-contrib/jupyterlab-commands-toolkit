@@ -1,12 +1,23 @@
 import asyncio
 import time
 import uuid
+from contextvars import ContextVar
 from typing import Any, Dict, Optional
 
 from jupyter_server.serverapp import ServerApp
 
 # Store for pending command results
 pending_requests: Dict[str, Dict[str, Any]] = {}
+
+# The web client (browser tab) a command should be routed to, or None to
+# broadcast to every connected browser. This is a per-context value: an
+# app-specific MCP middleware sets it (from request headers) for the duration
+# of a tool call, and ``execute_command`` reads it to stamp the emitted event.
+# Defined here so the toolkit stays generic (it knows only "there may be a
+# target web client"), while the resolution lives in the consuming application.
+target_client_id: ContextVar[Optional[str]] = ContextVar(
+    "target_client_id", default=None
+)
 
 # Tools list for jupyter-server-mcp entrypoint discovery
 TOOLS = [
@@ -27,6 +38,13 @@ def emit(data, wait_for_result=False):
         str: Request ID if wait_for_result is True, None otherwise
     """
     server = ServerApp.instance()
+
+    # Route this command to a specific web client when one is bound for the
+    # current context (set by the consuming application's MCP middleware).
+    # Absent => broadcast to every connected browser (backward compatible).
+    cid = target_client_id.get()
+    if cid is not None:
+        data.setdefault("client_id", cid)
 
     # Add request ID if waiting for result
     request_id = None
