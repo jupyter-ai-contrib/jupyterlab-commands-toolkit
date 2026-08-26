@@ -90,9 +90,6 @@
         "style/*.css",
         "style/index.js"
     ],
-    "resolutions": {
-        "@lumino/coreutils": "2.2.1"
-    },
     "styleModule": "style/index.js",
     "publishConfig": {
         "access": "public"

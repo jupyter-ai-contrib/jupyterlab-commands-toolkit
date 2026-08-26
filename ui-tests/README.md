@@ -2,8 +2,7 @@
 
 End-to-end (Playwright / galata) tests for `jupyterlab-commands-toolkit`.
 
-The package rides on Jupyter Events and does not depend on RTC, so there is no
-RTC matrix. Instead the suites are keyed on the optional integrations the
+The suites are keyed on the optional integrations the
 package supports. Each runs in its own isolated environment via `nox` (using
 `uv`), so the "package alone" behavior is tested separately from each
 integration.

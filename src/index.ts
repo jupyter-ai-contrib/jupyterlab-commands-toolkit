@@ -5,7 +5,7 @@ import {
 import { Event } from '@jupyterlab/services';
 import { Token } from '@lumino/coreutils';
 import { IEventListener } from 'jupyterlab-eventlistener';
-import { IChatTracker } from '@jupyter/chat';
+import { IChatTracker, IChatPanel } from '@jupyter/chat';
 
 const JUPYTERLAB_COMMAND_SCHEMA_ID =
   'https://events.jupyter.org/jupyterlab_command_toolkit/lab_command/v1';
@@ -249,10 +249,10 @@ const chatMetadataPlugin: JupyterFrontEndPlugin<void> = {
     if (!chatTracker) {
       return;
     }
-    const stamp = (panel: { model?: { input?: { updateMetadata?: any } } }) => {
+    const stamp = (panel: IChatPanel) => {
       // `updateMetadata` merges the patch, and the input model keeps its
       // metadata across sends, so a single stamp rides on every message.
-      panel?.model?.input?.updateMetadata?.({ web_client_id: WEB_CLIENT_ID });
+      panel.model.input.updateMetadata({ web_client_id: WEB_CLIENT_ID });
     };
     chatTracker.forEach(stamp);
     chatTracker.widgetAdded.connect((_, panel) => stamp(panel));
