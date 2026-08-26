@@ -26,28 +26,18 @@ MCP_PORT = int(os.environ.get("CT_MCP_PORT", "3999"))
 
 
 class ClientRoutingMiddleware(Middleware):
-    """Copy the X-Web-Client-Id header into the target_client_id contextvar.
+    """Copy the ``X-Web-Client-Id`` request header into the ``target_client_id``
+    contextvar for the duration of each tool call.
 
-    Reads the header from the per-call FastMCP request context rather than the
-    ambient ``get_http_headers()`` accessor: under concurrent, long-lived tool
-    calls the ambient HTTP-request contextvar is not reliably present in the
-    middleware's task (``get_http_request()`` raises and ``get_http_headers()``
-    returns ``{}``), which would drop the target and broadcast the command. The
-    request object hanging off ``request_context`` is bound to this specific
-    call, so it is race-free.
+    This mirrors how the production integration will route commands: the app
+    stamps the header on each ACP session's MCP server, the middleware reads it
+    and sets the contextvar, and ``execute_command`` reads the contextvar to
+    stamp ``client_id`` onto the emitted ``lab_command`` event.
     """
 
     async def on_call_tool(self, context, call_next):
-        wid = None
-        try:
-            request = context.fastmcp_context.request_context.request
-            if request is not None:
-                wid = request.headers.get("x-web-client-id")
-        except Exception:
-            wid = None
-        if wid is None:
-            wid = get_http_headers().get("x-web-client-id")
-        token = target_client_id.set(wid)
+        headers = get_http_headers()
+        token = target_client_id.set(headers.get("x-web-client-id"))
         try:
             return await call_next(context)
         finally:

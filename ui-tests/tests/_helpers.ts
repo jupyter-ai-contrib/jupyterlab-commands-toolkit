@@ -40,7 +40,7 @@ export async function openSecondClient(
 ): Promise<{ page2: any; cleanup: () => Promise<void> }> {
   if (mode === 'same-context') {
     const page2 = await page.context().newPage();
-    await page2.goto(`${baseURL}/lab`);
+    await page2.goto(`${baseURL}/lab?reset`);
     await waitForToolkit(page2);
     return {
       page2,
@@ -51,7 +51,7 @@ export async function openSecondClient(
   }
   const context = await browser.newContext();
   const page2 = await context.newPage();
-  await page2.goto(`${baseURL}/lab`);
+  await page2.goto(`${baseURL}/lab?reset`);
   await waitForToolkit(page2);
   return {
     page2,

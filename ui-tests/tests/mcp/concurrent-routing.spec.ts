@@ -16,6 +16,7 @@ import { callRunCommand } from './mcp-client';
 import {
   openSecondClient,
   SECOND_CLIENT_MODES,
+  waitForToolkit,
   webClientId
 } from '../_helpers';
 
@@ -46,7 +47,10 @@ test.describe('mcp integration: concurrent routing', () => {
       baseURL
     }) => {
       test.setTimeout(60_000);
-      // Client A is this galata page; client B per the mode under test.
+      // Client A is this galata page; client B per the mode under test. Reset
+      // A's workspace too so no stale layout is restored from a prior test.
+      await page.goto(`${baseURL}/lab?reset`);
+      await waitForToolkit(page);
       const idA = await webClientId(page);
       const { page2: pageB, cleanup } = await openSecondClient(
         page,
