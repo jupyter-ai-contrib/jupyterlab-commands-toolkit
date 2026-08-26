@@ -88,6 +88,80 @@ jobs:
         python -m jupyterlab.browser_check --no-browser-test
 
 
+  e2e:
+    name: E2E tests / ${{ matrix.variant }}
+    needs: build
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Keyed on optional integrations (not RTC): the package rides on Jupyter
+        # Events and is RTC-independent. Each variant maps to a nox session that
+        # installs the matching extras into an isolated venv.
+        include:
+          - { variant: Default, env: default }
+          - { variant: Chat integration, env: chat }
+          - { variant: MCP integration, env: mcp }
+
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/pw-browsers
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Base Setup
+      uses: jupyterlab/maintainer-tools/.github/actions/base-setup@v1
+
+    - name: Download extension package
+      uses: actions/download-artifact@v4
+      with:
+        name: extension-artifacts
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+
+    - name: Install nox
+      run: uv tool install nox
+
+    - name: Restore browser cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ github.workspace }}/pw-browsers
+        key: ${{ runner.os }}-${{ hashFiles('ui-tests/yarn.lock') }}
+
+    # Transport-independent, so it runs once at the job level: jlpm needs a
+    # bootstrap jupyterlab, and `playwright install-deps` needs sudo (not
+    # available inside a nox venv). nox reuses this node_modules + browser cache.
+    - name: Set up ui-tests deps + browser
+      working-directory: ui-tests
+      env:
+        YARN_ENABLE_IMMUTABLE_INSTALLS: 0
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+      run: |
+        set -eux
+        python -m pip install "jupyterlab>=4.0.0,<5"
+        jlpm install
+        jlpm playwright install-deps
+        jlpm playwright install chromium
+
+    - name: Run E2E suite (${{ matrix.variant }})
+      run: |
+        set -eux
+        export E2E_WHEEL="$(pwd)/$(ls jupyterlab_commands_toolkit*.whl)"
+        nox -s "e2e(env='${{ matrix.env }}')"
+
+    - name: Upload Playwright Test report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: jupyterlab_commands_toolkit-playwright-tests-${{ matrix.env }}
+        path: |
+          ui-tests/test-results
+          ui-tests/playwright-report
+
   check_links:
     name: Check Links
     runs-on: ubuntu-latest

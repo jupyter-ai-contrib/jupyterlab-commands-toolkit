@@ -55,6 +55,7 @@
         "watch:labextension": "jupyter labextension watch ."
     },
     "dependencies": {
+        "@jupyter/chat": "^0.25.0-alpha.5",
         "@jupyterlab/application": "^4.0.0",
         "@jupyterlab/coreutils": "^6.0.0",
         "@jupyterlab/services": "^7.0.0",
@@ -105,12 +106,18 @@
             }
         },
         "extension": true,
-        "outputDir": "jupyterlab_commands_toolkit/labextension"
+        "outputDir": "jupyterlab_commands_toolkit/labextension",
+        "sharedPackages": {
+            "@jupyter/chat": {
+                "singleton": true
+            }
+        }
     },
     "eslintIgnore": [
         "node_modules",
         "dist",
         "coverage",
+        "ui-tests",
         "**/*.d.ts"
     ],
     "eslintConfig": {

@@ -1,0 +1,16 @@
+{
+  "name": "jupyterlab-commands-toolkit-ui-tests",
+  "version": "1.0.0",
+  "description": "JupyterLab jupyterlab-commands-toolkit Integration Tests",
+  "private": true,
+  "scripts": {
+    "start": "jupyter lab --config jupyter_server_test_config.py",
+    "test": "jlpm playwright test",
+    "test:update": "jlpm playwright test --update-snapshots"
+  },
+  "devDependencies": {
+    "@jupyterlab/galata": "^5.6.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@playwright/test": "^1.37.0"
+  }
+}

@@ -15,6 +15,29 @@ for the frontend extension.
 - **Command Discovery**: List all available JupyterLab commands with their metadata
 - **Command Execution**: Execute any JupyterLab command programmatically from Python
 - **MCP Integration**: Automatically exposes tools to AI assistants via [jupyter-server-mcp](https://github.com/jupyter-ai-contrib/jupyter-server-mcp)
+- **Web Client Routing**: Address a command to a specific browser tab so it runs only there (see below)
+
+## Web client routing
+
+By default a `lab_command` is broadcast to every connected browser, so an
+AI-driven command (for example, running a notebook cell) runs on all of them. To
+target one client, the event carries an optional `client_id`: the frontend runs
+the command only when it matches this tab's web client id, and ignores it
+otherwise. A command with no `client_id` still runs everywhere, so existing
+behavior is unchanged when nothing opts in.
+
+- Each browser tab has a stable `web_client_id`, provided via the `IWebClientId`
+  token and queryable through the `jupyterlab-commands-toolkit:get-web-client-id`
+  command.
+- When `@jupyter/chat` is installed, the toolkit stamps this id into the metadata
+  of every message the tab sends, so a server-side agent can learn which client
+  triggered a message. This integration is optional and is a no-op when Jupyter
+  Chat is absent.
+- On the server, set the `jupyterlab_commands_toolkit.tools.target_client_id`
+  contextvar (an MCP middleware does this from a request header) and
+  `execute_command` stamps it onto the emitted event as `client_id`.
+
+See `ui-tests/README.md` for the end-to-end suites covering each of these paths.
 
 ## Requirements
 

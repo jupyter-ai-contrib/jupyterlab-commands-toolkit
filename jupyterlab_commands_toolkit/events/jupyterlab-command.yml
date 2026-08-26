@@ -15,3 +15,9 @@ properties:
   requestId:
     type: string
     description: The unique identifier for a command request expecting a result
+  client_id:
+    type: string
+    description: >
+      Optional target web client id. When set, only the browser whose web
+      client id matches executes the command; when absent, every browser
+      executes it (broadcast).
