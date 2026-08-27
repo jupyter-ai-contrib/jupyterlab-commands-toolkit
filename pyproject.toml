@@ -24,7 +24,6 @@ classifiers = [
 ]
 dependencies = [
     "jupyter_server>=2.4.0,<3",
-    "jupyterlab-eventlistener",
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]
 
