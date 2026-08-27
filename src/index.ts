@@ -59,7 +59,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const { commands } = app;
 
     // Subscribe to Jupyter Events via the ServiceManager event bus (available
-    // since JupyterLab 4.4), which supersedes the former
+    // since JupyterLab 4.0), which supersedes the former
     // `jupyterlab-eventlistener` dependency. The bus exposes a single shared
     // stream of all events, so we filter it by schema id ourselves.
     const events = app.serviceManager.events;
