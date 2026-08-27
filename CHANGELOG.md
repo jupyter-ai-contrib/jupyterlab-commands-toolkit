@@ -2,6 +2,12 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.2.0rc0
+
+No merged PRs
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.2.0a0
 
 ([Full Changelog](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/compare/v0.1.6...0d8e9a67f9a47848c4d26623a4be1a408474eba4))
@@ -18,8 +24,6 @@ See [our definition of contributors](https://github-activity.readthedocs.io/en/l
 ([GitHub contributors page for this release](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/graphs/contributors?from=2026-04-29&to=2026-08-26&type=c))
 
 @dlqqq ([activity](https://github.com/search?q=repo%3Ajupyter-ai-contrib%2Fjupyterlab-commands-toolkit+involves%3Adlqqq+updated%3A2026-04-29..2026-08-26&type=Issues))
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.1.6
 
