@@ -40,7 +40,14 @@ export async function openSecondClient(
 ): Promise<{ page2: any; cleanup: () => Promise<void> }> {
   if (mode === 'same-context') {
     const page2 = await page.context().newPage();
-    await page2.goto(`${baseURL}/lab?reset`);
+    // Open the second tab on its own JupyterLab workspace. In a shared browser
+    // context two tabs on the *same* (default) workspace collide: JupyterLab's
+    // window resolver treats the second as a duplicate and redirects it to a
+    // cloned workspace, and that mid-test navigation destroys the page's
+    // execution context (flaky "Execution context was destroyed" errors). A
+    // distinct workspace avoids the redirect while the tabs still share
+    // cookies/storage, which is what this mode is meant to exercise.
+    await page2.goto(`${baseURL}/lab/workspaces/second-client?reset`);
     await waitForToolkit(page2);
     return {
       page2,

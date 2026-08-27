@@ -4,7 +4,6 @@ import {
 } from '@jupyterlab/application';
 import { Event } from '@jupyterlab/services';
 import { Token } from '@lumino/coreutils';
-import { IEventListener } from 'jupyterlab-eventlistener';
 import { IChatTracker, IChatPanel } from '@jupyter/chat';
 
 const JUPYTERLAB_COMMAND_SCHEMA_ID =
@@ -56,75 +55,83 @@ const plugin: JupyterFrontEndPlugin<void> = {
   description:
     'A Jupyter extension that provides an AI toolkit for JupyterLab commands.',
   autoStart: true,
-  requires: [IEventListener],
-  activate: (app: JupyterFrontEnd, eventListener: IEventListener) => {
+  activate: (app: JupyterFrontEnd) => {
     const { commands } = app;
 
-    eventListener.addListener(
-      JUPYTERLAB_COMMAND_SCHEMA_ID,
-      async (manager, _, event: Event.Emission) => {
-        const data = event as any as JupyterLabCommand;
+    // Subscribe to Jupyter Events via the ServiceManager event bus (available
+    // since JupyterLab 4.0), which supersedes the former
+    // `jupyterlab-eventlistener` dependency. The bus exposes a single shared
+    // stream of all events, so we filter it by schema id ourselves.
+    const events = app.serviceManager.events;
 
-        // Web-client routing: a command may target a specific web client. Only
-        // the matching browser executes it; others ignore it entirely (no
-        // execution, no result). A command with no `client_id` is a broadcast
-        // and runs everywhere, preserving the pre-routing behavior.
-        if (data.client_id && data.client_id !== WEB_CLIENT_ID) {
-          return;
-        }
+    const handleCommand = async (event: Event.Emission): Promise<void> => {
+      const data = event as any as JupyterLabCommand;
 
-        const result: JupyterLabCommandResult = {
-          requestId: data.requestId || '',
-          success: false
-        };
-
-        try {
-          const commandResult = await app.commands.execute(
-            data.name,
-            data.args
-          );
-          result.success = true;
-
-          // Handle Widget objects specially (including subclasses like DocumentWidget)
-          let serializedResult;
-          if (
-            commandResult &&
-            typeof commandResult === 'object' &&
-            commandResult.constructor?.name?.includes('Widget')
-          ) {
-            serializedResult = {
-              type: commandResult.constructor?.name || 'Widget',
-              id: commandResult.id,
-              title: commandResult.title?.label || commandResult.title,
-              className: commandResult.className
-            };
-          } else {
-            // For other objects, try JSON serialization with fallback
-            try {
-              serializedResult = JSON.parse(JSON.stringify(commandResult));
-            } catch {
-              serializedResult = commandResult
-                ? '[Complex object - cannot serialize]'
-                : 'Command executed successfully';
-            }
-          }
-
-          result.result = serializedResult;
-        } catch (error) {
-          result.success = false;
-          result.error = error instanceof Error ? error.message : String(error);
-        }
-
-        // Emit the result back if we have a requestId
-        if (data.requestId) {
-          manager.emit({
-            schema_id: JUPYTERLAB_COMMAND_RESULT_SCHEMA_ID,
-            version: '1',
-            data: result
-          });
-        }
+      // Web-client routing: a command may target a specific web client. Only
+      // the matching browser executes it; others ignore it entirely (no
+      // execution, no result). A command with no `client_id` is a broadcast
+      // and runs everywhere, preserving the pre-routing behavior.
+      if (data.client_id && data.client_id !== WEB_CLIENT_ID) {
+        return;
       }
-    );
+
+      const result: JupyterLabCommandResult = {
+        requestId: data.requestId || '',
+        success: false
+      };
+
+      try {
+        const commandResult = await app.commands.execute(data.name, data.args);
+        result.success = true;
+
+        // Handle Widget objects specially (including subclasses like DocumentWidget)
+        let serializedResult;
+        if (
+          commandResult &&
+          typeof commandResult === 'object' &&
+          commandResult.constructor?.name?.includes('Widget')
+        ) {
+          serializedResult = {
+            type: commandResult.constructor?.name || 'Widget',
+            id: commandResult.id,
+            title: commandResult.title?.label || commandResult.title,
+            className: commandResult.className
+          };
+        } else {
+          // For other objects, try JSON serialization with fallback
+          try {
+            serializedResult = JSON.parse(JSON.stringify(commandResult));
+          } catch {
+            serializedResult = commandResult
+              ? '[Complex object - cannot serialize]'
+              : 'Command executed successfully';
+          }
+        }
+
+        result.result = serializedResult;
+      } catch (error) {
+        result.success = false;
+        result.error = error instanceof Error ? error.message : String(error);
+      }
+
+      // Emit the result back if we have a requestId
+      if (data.requestId) {
+        void events.emit({
+          schema_id: JUPYTERLAB_COMMAND_RESULT_SCHEMA_ID,
+          version: '1',
+          data: result
+        });
+      }
+    };
+
+    // Only `lab_command` events drive command execution; ignore everything
+    // else on the shared event stream.
+    events.stream.connect((_, emission) => {
+      if (emission.schema_id !== JUPYTERLAB_COMMAND_SCHEMA_ID) {
+        return;
+      }
+      void handleCommand(emission);
+    });
 
     commands.addCommand('jupyterlab-commands-toolkit:list-all-commands', {
       label: 'List All Commands',

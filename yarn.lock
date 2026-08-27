@@ -2086,7 +2086,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lumino/coreutils@npm:^1.11.0 || ^2.0.0, @lumino/coreutils@npm:^1.11.0 || ^2.2.1, @lumino/coreutils@npm:^1.11.0 || ^2.2.2, @lumino/coreutils@npm:^2.1.2, @lumino/coreutils@npm:^2.2.1, @lumino/coreutils@npm:^2.2.2, @lumino/coreutils@npm:^2.2.3":
+"@lumino/coreutils@npm:^1.11.0 || ^2.0.0, @lumino/coreutils@npm:^1.11.0 || ^2.2.1, @lumino/coreutils@npm:^1.11.0 || ^2.2.2, @lumino/coreutils@npm:^2.2.1, @lumino/coreutils@npm:^2.2.2, @lumino/coreutils@npm:^2.2.3":
   version: 2.2.3
   resolution: "@lumino/coreutils@npm:2.2.3"
   dependencies:
@@ -5612,7 +5612,6 @@ __metadata:
     eslint: ^8.36.0
     eslint-config-prettier: ^8.8.0
     eslint-plugin-prettier: ^5.0.0
-    jupyterlab-eventlistener: ^0.4.0
     mkdirp: ^1.0.3
     npm-run-all2: ^7.0.1
     prettier: ^3.0.0
@@ -5628,16 +5627,6 @@ __metadata:
     yjs: ^13.5.0
   languageName: unknown
   linkType: soft
-
-"jupyterlab-eventlistener@npm:^0.4.0":
-  version: 0.4.0
-  resolution: "jupyterlab-eventlistener@npm:0.4.0"
-  dependencies:
-    "@jupyterlab/services": ^7.0.0
-    "@lumino/coreutils": ^2.1.2
-  checksum: beeb6e86374a8d56580ee22a19b3d1d7d01cdd85d81b57950065b3479c0749003d7b4e82824fd2ebde48886c37c1d60f6c6da8beb86f3b1c26d20900237b3a23
-  languageName: node
-  linkType: hard
 
 "katex@npm:^0.16.47":
   version: 0.16.47

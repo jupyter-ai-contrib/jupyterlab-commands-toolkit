@@ -58,8 +58,7 @@
         "@jupyter/chat": "^0.25.0-alpha.5",
         "@jupyterlab/application": "^4.0.0",
         "@jupyterlab/coreutils": "^6.0.0",
-        "@jupyterlab/services": "^7.0.0",
-        "jupyterlab-eventlistener": "^0.4.0"
+        "@jupyterlab/services": "^7.0.0"
     },
     "devDependencies": {
         "@jupyterlab/builder": "^4.0.0",
