@@ -2,11 +2,28 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.2.0rc1
+
+([Full Changelog](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/compare/v0.2.0rc0...b0d924c63b6b913ea48f9d34a051b35da698919b))
+
+### Maintenance and upkeep improvements
+
+- Remove `jupyterlab-eventlistener` [#30](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/pull/30) ([@dlqqq](https://github.com/dlqqq))
+
+### Contributors to this release
+
+The following people contributed discussions, new ideas, code and documentation contributions, and review.
+See [our definition of contributors](https://github-activity.readthedocs.io/en/latest/use/#how-does-this-tool-define-contributions-in-the-reports).
+
+([GitHub contributors page for this release](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/graphs/contributors?from=2026-08-27&to=2026-08-27&type=c))
+
+@dlqqq ([activity](https://github.com/search?q=repo%3Ajupyter-ai-contrib%2Fjupyterlab-commands-toolkit+involves%3Adlqqq+updated%3A2026-08-27..2026-08-27&type=Issues))
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.2.0rc0
 
 No merged PRs
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.2.0a0
 
