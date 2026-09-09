@@ -35,6 +35,7 @@ jobs:
         set -eux
         python -m pip install .[test]
 
+        pytest -vv -r ap --cov jupyterlab_commands_toolkit
         jupyter server extension list
         jupyter server extension list 2>&1 | grep -ie "jupyterlab_commands_toolkit.*OK"
 
