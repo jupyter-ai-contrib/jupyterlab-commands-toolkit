@@ -9,12 +9,8 @@ from jupyter_server.serverapp import ServerApp
 # Store for pending command results
 pending_requests: Dict[str, Dict[str, Any]] = {}
 
-# The web client (browser tab) a command should be routed to, or None to
-# broadcast to every connected browser. This is a per-context value: an
-# app-specific MCP middleware sets it (from request headers) for the duration
-# of a tool call, and ``execute_command`` reads it to stamp the emitted event.
-# Defined here so the toolkit stays generic (it knows only "there may be a
-# target web client"), while the resolution lives in the consuming application.
+# The id of the web client that should execute the emitted commands,
+# or None to have all connected web clients execute them
 target_client_id: ContextVar[Optional[str]] = ContextVar(
     "target_client_id", default=None
 )
@@ -39,12 +35,9 @@ def emit(data, wait_for_result=False):
     """
     server = ServerApp.instance()
 
-    # Route this command to a specific web client when one is bound for the
-    # current context (set by the consuming application's MCP middleware).
-    # Absent => broadcast to every connected browser (backward compatible).
-    cid = target_client_id.get()
-    if cid is not None:
-        data.setdefault("client_id", cid)
+    client_id = target_client_id.get()
+    if client_id is not None:
+        data.setdefault("client_id", client_id)
 
     # Add request ID if waiting for result
     request_id = None

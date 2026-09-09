@@ -3,8 +3,7 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 import { Event } from '@jupyterlab/services';
-import { Token } from '@lumino/coreutils';
-import { IChatTracker, IChatPanel } from '@jupyter/chat';
+import { Token, UUID } from '@lumino/coreutils';
 
 const JUPYTERLAB_COMMAND_SCHEMA_ID =
   'https://events.jupyter.org/jupyterlab_command_toolkit/lab_command/v1';
@@ -13,19 +12,20 @@ const JUPYTERLAB_COMMAND_RESULT_SCHEMA_ID =
   'https://events.jupyter.org/jupyterlab_command_toolkit/lab_command_result/v1';
 
 /**
- * A stable id for this browser tab (this web client), generated once per page
- * load. Commands may be addressed to a specific web client via `client_id`;
- * this id is what an incoming command is matched against, and the value this
- * tab stamps into the metadata of the chat messages it sends.
+ * The command IDs used by the extension.
  */
-export const WEB_CLIENT_ID = crypto.randomUUID();
+namespace CommandIDs {
+  export const listAllCommands =
+    'jupyterlab-commands-toolkit:list-all-commands';
+  export const getWebClientId = 'jupyterlab-commands-toolkit:get-web-client-id';
+}
 
 /**
- * Token providing this browser tab's web client id, for other extensions that
- * want to read it.
+ * The token for the id of this web client (browser tab).
  */
 export const IWebClientId = new Token<string>(
-  'jupyterlab-commands-toolkit:IWebClientId'
+  'jupyterlab-commands-toolkit:IWebClientId',
+  'The id of this web client, used to route commands to a specific browser tab.'
 );
 
 type JupyterLabCommand = {
@@ -33,9 +33,8 @@ type JupyterLabCommand = {
   args: any;
   requestId?: string;
   /**
-   * Optional target web client. When set, only the browser whose
-   * `WEB_CLIENT_ID` matches executes the command; other browsers ignore it.
-   * When absent, every browser executes it (backward-compatible broadcast).
+   * The id of the web client that should execute the command.
+   * When not set, all web clients execute the command.
    */
   client_id?: string;
 };
@@ -48,6 +47,17 @@ type JupyterLabCommandResult = {
 };
 
 /**
+ * A plugin providing a unique id for this web client.
+ */
+const webClientId: JupyterFrontEndPlugin<string> = {
+  id: 'jupyterlab-commands-toolkit:web-client-id',
+  description: 'Provides a unique id for this web client.',
+  autoStart: true,
+  provides: IWebClientId,
+  activate: (): string => UUID.uuid4()
+};
+
+/**
  * Initialization data for the jupyterlab-commands-toolkit extension.
  */
 const plugin: JupyterFrontEndPlugin<void> = {
@@ -55,23 +65,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
   description:
     'A Jupyter extension that provides an AI toolkit for JupyterLab commands.',
   autoStart: true,
-  activate: (app: JupyterFrontEnd) => {
+  requires: [IWebClientId],
+  activate: (app: JupyterFrontEnd, clientId: string) => {
     const { commands } = app;
-
-    // Subscribe to Jupyter Events via the ServiceManager event bus (available
-    // since JupyterLab 4.0), which supersedes the former
-    // `jupyterlab-eventlistener` dependency. The bus exposes a single shared
-    // stream of all events, so we filter it by schema id ourselves.
     const events = app.serviceManager.events;
 
     const handleCommand = async (event: Event.Emission): Promise<void> => {
       const data = event as any as JupyterLabCommand;
-
-      // Web-client routing: a command may target a specific web client. Only
-      // the matching browser executes it; others ignore it entirely (no
-      // execution, no result). A command with no `client_id` is a broadcast
-      // and runs everywhere, preserving the pre-routing behavior.
-      if (data.client_id && data.client_id !== WEB_CLIENT_ID) {
+      if (data.client_id && data.client_id !== clientId) {
         return;
       }
 
@@ -124,16 +125,18 @@ const plugin: JupyterFrontEndPlugin<void> = {
       }
     };
 
-    // Only `lab_command` events drive command execution; ignore everything
-    // else on the shared event stream.
-    events.stream.connect((_, emission) => {
-      if (emission.schema_id !== JUPYTERLAB_COMMAND_SCHEMA_ID) {
-        return;
+    events.stream.connect((sender, emission) => {
+      if (emission.schema_id === JUPYTERLAB_COMMAND_SCHEMA_ID) {
+        void handleCommand(emission);
       }
-      void handleCommand(emission);
     });
 
-    commands.addCommand('jupyterlab-commands-toolkit:list-all-commands', {
+    commands.addCommand(CommandIDs.getWebClientId, {
+      label: 'Get Web Client ID',
+      execute: () => clientId
+    });
+
+    commands.addCommand(CommandIDs.listAllCommands, {
       label: 'List All Commands',
       describedBy: {
         args: {}
@@ -211,59 +214,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         };
       }
     });
-
-    // Introspection: return this browser tab's web client id. Useful for
-    // debugging multi-client routing (and for E2E tests to learn the id).
-    commands.addCommand('jupyterlab-commands-toolkit:get-web-client-id', {
-      label: 'Get Web Client ID',
-      describedBy: {
-        args: {}
-      },
-      execute: () => WEB_CLIENT_ID
-    });
   }
 };
 
-/**
- * Provides this browser tab's web client id via a token.
- */
-const webClientIdPlugin: JupyterFrontEndPlugin<string> = {
-  id: 'jupyterlab-commands-toolkit:web-client-id',
-  description: "Provides this browser tab's stable web client id.",
-  autoStart: true,
-  provides: IWebClientId,
-  activate: (): string => WEB_CLIENT_ID
-};
-
-/**
- * Optional integration with Jupyter Chat: stamp this browser tab's web client
- * id into the metadata of every chat message it sends, so an AI persona can
- * route frontend commands back to the specific web client that triggered them.
- *
- * This plugin only activates when `@jupyter/chat` provides `IChatTracker`; when
- * Jupyter Chat is absent, the token is not provided and this is a no-op. The
- * id is merged into `input.metadata` (not replaced), so it coexists with
- * metadata contributed by other extensions (e.g. persona-manager's
- * `to_persona`/`model`/`settings`).
- */
-const chatMetadataPlugin: JupyterFrontEndPlugin<void> = {
-  id: 'jupyterlab-commands-toolkit:web-client-metadata',
-  description:
-    'Stamps the web client id into outgoing chat message metadata (optional; requires @jupyter/chat).',
-  autoStart: true,
-  optional: [IChatTracker],
-  activate: (app: JupyterFrontEnd, chatTracker: IChatTracker | null) => {
-    if (!chatTracker) {
-      return;
-    }
-    const stamp = (panel: IChatPanel) => {
-      // `updateMetadata` merges the patch, and the input model keeps its
-      // metadata across sends, so a single stamp rides on every message.
-      panel.model.input.updateMetadata({ web_client_id: WEB_CLIENT_ID });
-    };
-    chatTracker.forEach(stamp);
-    chatTracker.widgetAdded.connect((_, panel) => stamp(panel));
-  }
-};
-
-export default [plugin, webClientIdPlugin, chatMetadataPlugin];
+export default [webClientId, plugin];
