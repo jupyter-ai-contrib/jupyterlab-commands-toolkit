@@ -33,9 +33,8 @@ finally:
     target_client_id.reset(token)
 ```
 
-Each web client has a unique id, which other frontend extensions can access via
-the `IWebClientId` token, and which the `jupyterlab-commands-toolkit:get-web-client-id`
-command returns.
+Each web client has a unique id, which the
+`jupyterlab-commands-toolkit:get-web-client-id` command returns.
 
 ## Requirements
 

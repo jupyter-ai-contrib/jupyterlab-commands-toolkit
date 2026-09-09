@@ -3,7 +3,7 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 import { Event } from '@jupyterlab/services';
-import { Token, UUID } from '@lumino/coreutils';
+import { UUID } from '@lumino/coreutils';
 
 const JUPYTERLAB_COMMAND_SCHEMA_ID =
   'https://events.jupyter.org/jupyterlab_command_toolkit/lab_command/v1';
@@ -19,14 +19,6 @@ namespace CommandIDs {
     'jupyterlab-commands-toolkit:list-all-commands';
   export const getWebClientId = 'jupyterlab-commands-toolkit:get-web-client-id';
 }
-
-/**
- * The token for the id of this web client (browser tab).
- */
-export const IWebClientId = new Token<string>(
-  'jupyterlab-commands-toolkit:IWebClientId',
-  'The id of this web client, used to route commands to a specific browser tab.'
-);
 
 type JupyterLabCommand = {
   name: string;
@@ -47,17 +39,6 @@ type JupyterLabCommandResult = {
 };
 
 /**
- * A plugin providing a unique id for this web client.
- */
-const webClientId: JupyterFrontEndPlugin<string> = {
-  id: 'jupyterlab-commands-toolkit:web-client-id',
-  description: 'Provides a unique id for this web client.',
-  autoStart: true,
-  provides: IWebClientId,
-  activate: (): string => UUID.uuid4()
-};
-
-/**
  * Initialization data for the jupyterlab-commands-toolkit extension.
  */
 const plugin: JupyterFrontEndPlugin<void> = {
@@ -65,10 +46,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
   description:
     'A Jupyter extension that provides an AI toolkit for JupyterLab commands.',
   autoStart: true,
-  requires: [IWebClientId],
-  activate: (app: JupyterFrontEnd, clientId: string) => {
+  activate: (app: JupyterFrontEnd) => {
     const { commands } = app;
     const events = app.serviceManager.events;
+    // The id of this web client (browser tab), new on each page load
+    const clientId = UUID.uuid4();
 
     const handleCommand = async (event: Event.Emission): Promise<void> => {
       const data = event as any as JupyterLabCommand;
@@ -217,4 +199,4 @@ const plugin: JupyterFrontEndPlugin<void> = {
   }
 };
 
-export default [webClientId, plugin];
+export default plugin;
