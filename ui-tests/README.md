@@ -1,64 +1,58 @@
-# Integration tests
+# Integration Testing
 
-End-to-end (Playwright / galata) tests for `jupyterlab-commands-toolkit`.
+This folder contains the integration tests of the extension.
 
-The suites are keyed on the optional integrations the
-package supports. Each runs in its own isolated environment via `nox` (using
-`uv`), so the "package alone" behavior is tested separately from each
-integration.
+They are defined using [Playwright](https://playwright.dev/docs/intro) test runner
+and [Galata](https://github.com/jupyterlab/jupyterlab/tree/main/galata) helper.
 
-## Suites
+The Playwright configuration is defined in [playwright.config.js](./playwright.config.js).
 
-Run with `nox` from the repository root:
+The JupyterLab server configuration to use for the integration test is defined
+in [jupyter_server_test_config.py](./jupyter_server_test_config.py).
 
-```bash
-nox -l                      # list sessions
-nox -s e2e                  # run all three suites
-nox -s "e2e(env='chat')"    # run one suite
-```
+The default configuration will produce video for failing tests and an HTML report.
 
-### `default` — the package alone
+## Run the tests
 
-`tests/default/` — no optional dependencies installed. Verifies command
-routing over `lab_command` events: a broadcast command (no `client_id`) runs on
-this client, a command targeting this client's `web_client_id` runs, and a
-command targeting a different client is ignored. A test-only server extension
-(`e2e_emit_ext.py`) emits the events through the toolkit's real `emit()` path.
+> All commands are assumed to be executed from the root directory
 
-### `chat` — Jupyter Chat integration
+To run the tests, you need to:
 
-`tests/chat/` — installs `jupyterlab-chat`, which provides `IChatTracker` so the
-toolkit's optional metadata contributor activates. Verifies that a per-tab
-`web_client_id` is attached to the metadata of a sent chat message, and that two
-browser tabs get two different `web_client_id`s.
+1. Compile the extension:
 
-### `mcp` — MCP integration
-
-`tests/mcp/` — installs `fastmcp`/`mcp`. A test-only in-process FastMCP server
-(`e2e_mcp_ext.py`), standing in for `jupyter-server-mcp`, installs a middleware
-that copies the `X-Web-Client-Id` request header into the `target_client_id`
-contextvar, and exposes a `run_command` tool that calls the toolkit's
-`execute_command`. The spec connects an MCP client with a target client's id in
-the header and verifies the command runs only on that browser, not on a second
-connected client. This exercises the full production routing path: header →
-middleware → contextvar → event `client_id` → frontend guard.
-
-## How the pieces fit
-
-- `jupyter_server_test_config.py` loads `e2e_emit_ext` for the `default`/`chat`
-  suites and `e2e_mcp_ext` for the `mcp` suite, selected by the `CT_E2E_SUITE`
-  environment variable that the nox session sets.
-- `noxfile.py` installs the extension (the prebuilt wheel via `E2E_WHEEL` in CI,
-  or from source locally) plus the suite's extra packages, then runs only that
-  suite's spec directory.
-
-## Local run without nox
-
-```bash
+```sh
 jlpm install
-jlpm playwright install chromium
-CT_E2E_SUITE=default jlpm playwright test tests/default
+jlpm build:prod
 ```
 
-(Install `jupyterlab-chat` or `fastmcp`/`mcp` in the environment first to run the
-`chat` or `mcp` suites this way.)
+> Check the extension is installed in JupyterLab.
+
+2. Install test dependencies (needed only once):
+
+```sh
+cd ./ui-tests
+jlpm install
+jlpm playwright install
+cd ..
+```
+
+3. Execute the [Playwright](https://playwright.dev/docs/intro) tests:
+
+```sh
+cd ./ui-tests
+jlpm playwright test
+```
+
+Test results will be shown in the terminal. In case of any test failures, the test report
+will be opened in your browser at the end of the tests execution; see
+[Playwright documentation](https://playwright.dev/docs/test-reporters#html-reporter)
+for configuring that behavior.
+
+## Debug tests
+
+To debug tests, a good way is to use the inspector tool of Playwright:
+
+```sh
+cd ./ui-tests
+PWDEBUG=1 jlpm playwright test
+```
