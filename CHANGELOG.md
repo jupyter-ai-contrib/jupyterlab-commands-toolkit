@@ -2,6 +2,25 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.3.0a0
+
+([Full Changelog](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/compare/v0.2.0...706af8e00c6d13fa32ca3c65fed666155bd62eab))
+
+### Maintenance and upkeep improvements
+
+- Clean up web client routing [#34](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/pull/34) ([@jtpio](https://github.com/jtpio), [@Zsailer](https://github.com/Zsailer))
+
+### Contributors to this release
+
+The following people contributed discussions, new ideas, code and documentation contributions, and review.
+See [our definition of contributors](https://github-activity.readthedocs.io/en/latest/use/#how-does-this-tool-define-contributions-in-the-reports).
+
+([GitHub contributors page for this release](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/graphs/contributors?from=2026-09-02&to=2026-09-10&type=c))
+
+@jtpio ([activity](https://github.com/search?q=repo%3Ajupyter-ai-contrib%2Fjupyterlab-commands-toolkit+involves%3Ajtpio+updated%3A2026-09-02..2026-09-10&type=Issues)) | @Zsailer ([activity](https://github.com/search?q=repo%3Ajupyter-ai-contrib%2Fjupyterlab-commands-toolkit+involves%3AZsailer+updated%3A2026-09-02..2026-09-10&type=Issues))
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.2.0
 
 ([Full Changelog](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/compare/v0.1.6...b0d924c63b6b913ea48f9d34a051b35da698919b))
@@ -22,8 +41,6 @@ See [our definition of contributors](https://github-activity.readthedocs.io/en/l
 ([GitHub contributors page for this release](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/graphs/contributors?from=2026-04-29&to=2026-09-02&type=c))
 
 @dlqqq ([activity](https://github.com/search?q=repo%3Ajupyter-ai-contrib%2Fjupyterlab-commands-toolkit+involves%3Adlqqq+updated%3A2026-04-29..2026-09-02&type=Issues))
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.2.0rc1
 
