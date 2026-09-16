@@ -129,7 +129,9 @@ jupyter labextension list
 
 ### Development install
 
-Note: You will need NodeJS to build the extension package.
+Note: You will need Node.js to build the extension package.
+You may install it from [nodejs.org](https://nodejs.org/en/download). We
+recommend using the latest LTS version of Node.js.
 
 The `jlpm` command is JupyterLab's pinned version of
 [yarn](https://yarnpkg.com/) that is installed with JupyterLab. You may use
@@ -138,13 +140,20 @@ The `jlpm` command is JupyterLab's pinned version of
 ```bash
 # Clone the repo to your local environment
 # Change directory to the jupyterlab_commands_toolkit directory
-# Install package in development mode
-pip install -e "."
+
+# Set up a virtual environment and install package in development mode
+python -m venv .venv
+source .venv/bin/activate
+pip install --editable ".[dev,test]"
+
 # Link your development version of the extension with JupyterLab
-jupyter labextension develop . --overwrite
+jupyter-builder develop . --overwrite
 # Server extension must be manually installed in develop mode
 jupyter server extension enable jupyterlab_commands_toolkit
+
 # Rebuild extension Typescript source after making changes
+# IMPORTANT: Unlike the steps above which are performed only once, do this step
+# every time you make a change.
 jlpm build
 ```
 
@@ -173,7 +182,7 @@ jupyter server extension disable jupyterlab_commands_toolkit
 pip uninstall jupyterlab_commands_toolkit
 ```
 
-In development mode, you will also need to remove the symlink created by `jupyter labextension develop`
+In development mode, you will also need to remove the symlink created by `jupyter-builder develop`
 command. To find its location, you can run `jupyter labextension list` to figure out where the `labextensions`
 folder is located. Then you can remove the symlink named `jupyterlab-commands-toolkit` within that folder.
 
