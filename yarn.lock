@@ -1165,14 +1165,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/estree@npm:^1.0.6":
-  version: 1.0.8
-  resolution: "@types/estree@npm:1.0.8"
-  checksum: bd93e2e415b6f182ec4da1074e1f36c480f1d26add3e696d54fb30c09bc470897e41361c8fd957bf0985024f8fbf1e6e2aff977d79352ef7eb93a5c6dcff6c11
-  languageName: node
-  linkType: hard
-
-"@types/estree@npm:^1.0.8":
+"@types/estree@npm:^1.0.6, @types/estree@npm:^1.0.8":
   version: 1.0.9
   resolution: "@types/estree@npm:1.0.9"
   checksum: 752c0afee3ec82b8e24484bf6a27dfa093bbf3de4ef1c20ed0364fb6ad2c0c7971e7504ed9a7aaff103a47e2d945ce7a17f74951743dd944782a0735f53170de
@@ -1380,21 +1373,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.16.0, acorn@npm:^8.5.0":
+"acorn@npm:^8.16.0, acorn@npm:^8.5.0, acorn@npm:^8.9.0":
   version: 8.18.0
   resolution: "acorn@npm:8.18.0"
   bin:
     acorn: bin/acorn
   checksum: 97d3e1696acb3e85b15c82a4193a9ecffe5df55ae408ed804e07955f3e3e53d0bbfdb9e5c9885c938371b78481f7667e36d12814764863d190de2117ed4757d7
-  languageName: node
-  linkType: hard
-
-"acorn@npm:^8.9.0":
-  version: 8.15.0
-  resolution: "acorn@npm:8.15.0"
-  bin:
-    acorn: bin/acorn
-  checksum: 309c6b49aedf1a2e34aaf266de06de04aab6eb097c02375c66fdeb0f64556a6a823540409914fb364d9a11bc30d79d485a2eba29af47992d3490e9886c4391c3
   languageName: node
   linkType: hard
 
@@ -1776,19 +1760,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.4":
-  version: 4.4.1
-  resolution: "debug@npm:4.4.1"
-  dependencies:
-    ms: ^2.1.3
-  peerDependenciesMeta:
-    supports-color:
-      optional: true
-  checksum: a43826a01cda685ee4cec00fb2d3322eaa90ccadbef60d9287debc2a886be3e835d9199c80070ede75a409ee57828c4c6cd80e4b154f2843f0dc95a570dc0729
-  languageName: node
-  linkType: hard
-
-"debug@npm:^4.4.3":
+"debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.4, debug@npm:^4.4.3":
   version: 4.4.3
   resolution: "debug@npm:4.4.3"
   dependencies:
@@ -2262,14 +2234,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flatted@npm:^3.2.9":
-  version: 3.3.3
-  resolution: "flatted@npm:3.3.3"
-  checksum: 8c96c02fbeadcf4e8ffd0fa24983241e27698b0781295622591fc13585e2f226609d95e422bcf2ef044146ffacb6b68b1f20871454eddf75ab3caa6ee5f4a1fe
-  languageName: node
-  linkType: hard
-
-"flatted@npm:^3.4.2":
+"flatted@npm:^3.2.9, flatted@npm:^3.4.2":
   version: 3.4.4
   resolution: "flatted@npm:3.4.4"
   checksum: f13e7db38118fdc8deb497b27c8ce6877ea97f8afc96af2d633817d46d368a2fac9ed16c0df422722f876e9252b6fce92a628943b5bf1ce0681d07b949939fcc
@@ -3144,14 +3109,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minipass@npm:^5.0.0 || ^6.0.2 || ^7.0.0, minipass@npm:^7.1.2":
-  version: 7.1.2
-  resolution: "minipass@npm:7.1.2"
-  checksum: 2bfd325b95c555f2b4d2814d49325691c7bee937d753814861b0b49d5edcda55cbbf22b6b6a60bb91eddac8668771f03c5ff647dcd9d0f798e9548b9cdc46ee3
-  languageName: node
-  linkType: hard
-
-"minipass@npm:^7.1.3":
+"minipass@npm:^5.0.0 || ^6.0.2 || ^7.0.0, minipass@npm:^7.1.2, minipass@npm:^7.1.3":
   version: 7.1.3
   resolution: "minipass@npm:7.1.3"
   checksum: 2ede17c0bf8fec499be3360fd07f0ec7666189e3907320a9b653f1530cf84af98928c5b12d80bfb75f321833bf2e97785b940540213ebdafe97a5f10327e664d
@@ -3759,16 +3717,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.3.4":
-  version: 7.7.2
-  resolution: "semver@npm:7.7.2"
-  bin:
-    semver: bin/semver.js
-  checksum: dd94ba8f1cbc903d8eeb4dd8bf19f46b3deb14262b6717d0de3c804b594058ae785ef2e4b46c5c3b58733c99c83339068203002f9e37cfe44f7e2cc5e3d2f621
-  languageName: node
-  linkType: hard
-
-"semver@npm:^7.3.5, semver@npm:^7.6.3, semver@npm:^7.7.3":
+"semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.6.3, semver@npm:^7.7.3":
   version: 7.8.5
   resolution: "semver@npm:7.8.5"
   bin:
