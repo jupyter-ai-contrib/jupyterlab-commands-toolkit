@@ -3,6 +3,7 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 import { Event } from '@jupyterlab/services';
+import { ITranslator, nullTranslator } from '@jupyterlab/translation';
 import { UUID } from '@lumino/coreutils';
 
 const JUPYTERLAB_COMMAND_SCHEMA_ID =
@@ -46,9 +47,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
   description:
     'A Jupyter extension that provides an AI toolkit for JupyterLab commands.',
   autoStart: true,
-  activate: (app: JupyterFrontEnd) => {
+  optional: [ITranslator],
+  activate: (app: JupyterFrontEnd, translator: ITranslator | null) => {
     const { commands } = app;
     const events = app.serviceManager.events;
+    const trans = (translator ?? nullTranslator).load(
+      'jupyterlab_commands_toolkit'
+    );
     // The id of this web client (browser tab), new on each page load
     const clientId = UUID.uuid4();
 
@@ -114,14 +119,30 @@ const plugin: JupyterFrontEndPlugin<void> = {
     });
 
     commands.addCommand(CommandIDs.getWebClientId, {
-      label: 'Get Web Client ID',
+      label: trans.__('Get Web Client ID'),
+      describedBy: {
+        args: {
+          type: 'object',
+          properties: {}
+        }
+      },
       execute: () => clientId
     });
 
     commands.addCommand(CommandIDs.listAllCommands, {
-      label: 'List All Commands',
+      label: trans.__('List All Commands'),
       describedBy: {
-        args: {}
+        args: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: trans.__(
+                'Only list the commands with an id, label, caption or usage that contains this text'
+              )
+            }
+          }
+        }
       },
       execute: async (args: any) => {
         const query = args['query'] as string | undefined;
