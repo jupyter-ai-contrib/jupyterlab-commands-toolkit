@@ -132,7 +132,17 @@ const plugin: JupyterFrontEndPlugin<void> = {
     commands.addCommand(CommandIDs.listAllCommands, {
       label: trans.__('List All Commands'),
       describedBy: {
-        args: {}
+        args: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              description: trans.__(
+                'Only list the commands with an id, label, caption or usage that contains this text'
+              )
+            }
+          }
+        }
       },
       execute: async (args: any) => {
         const query = args['query'] as string | undefined;
