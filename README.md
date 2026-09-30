@@ -58,9 +58,6 @@ method when the command did not reach a web client:
 An error of the command itself, for example an unknown command id, has no
 `error_code`.
 
-After an upgrade of the extension, reload the open JupyterLab tabs: a tab that still
-runs the previous version does not acknowledge the commands.
-
 ## Requirements
 
 - JupyterLab >= 4.5.0a3
