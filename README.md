@@ -36,6 +36,31 @@ finally:
 Each web client has a unique id, which the
 `jupyterlab-commands-toolkit:get-web-client-id` command returns.
 
+## Without a web client
+
+The commands run in a web client, so JupyterLab must be open in a web browser.
+When no web client is connected, `execute_command` and `list_all_commands` return
+an error immediately. A connected web client also acknowledges each command it
+receives. When no web client acknowledges a command within 2 seconds, for example
+because the target web client was closed, they return an error instead of waiting
+for the full timeout.
+
+These errors have an `error_code`, so that a caller can fall back to another
+method when the command did not reach a web client:
+
+| `error_code`           | Meaning                                                                  |
+| ---------------------- | ------------------------------------------------------------------------ |
+| `no_web_client`        | No web client is connected, or none acknowledged the command             |
+| `web_client_not_found` | The target web client (see above) did not acknowledge the command        |
+| `timeout`              | A web client received the command, but sent no result before the timeout |
+| `invalid_command`      | The command does not match the event schema                              |
+
+An error of the command itself, for example an unknown command id, has no
+`error_code`.
+
+After an upgrade of the extension, reload the open JupyterLab tabs: a tab that still
+runs the previous version does not acknowledge the commands.
+
 ## Requirements
 
 - JupyterLab >= 4.5.0a3

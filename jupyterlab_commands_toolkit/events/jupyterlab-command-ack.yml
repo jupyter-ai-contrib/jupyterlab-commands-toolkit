@@ -1,0 +1,16 @@
+"$id": https://events.jupyter.org/jupyterlab_command_toolkit/lab_command_ack/v1
+version: "1"
+title: A JupyterLab Command Acknowledgment
+personal-data: true
+description: |
+  Sent by a web client when it receives a JupyterLab Command, before it executes it
+type: object
+required:
+  - requestId
+properties:
+  requestId:
+    type: string
+    description: The unique identifier for the command request
+  client_id:
+    type: string
+    description: The identifier of the web client that received the command

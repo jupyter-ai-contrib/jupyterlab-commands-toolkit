@@ -12,6 +12,9 @@ const JUPYTERLAB_COMMAND_SCHEMA_ID =
 const JUPYTERLAB_COMMAND_RESULT_SCHEMA_ID =
   'https://events.jupyter.org/jupyterlab_command_toolkit/lab_command_result/v1';
 
+const JUPYTERLAB_COMMAND_ACK_SCHEMA_ID =
+  'https://events.jupyter.org/jupyterlab_command_toolkit/lab_command_ack/v1';
+
 /**
  * The command IDs used by the extension.
  */
@@ -61,6 +64,15 @@ const plugin: JupyterFrontEndPlugin<void> = {
       const data = event as any as JupyterLabCommand;
       if (data.client_id && data.client_id !== clientId) {
         return;
+      }
+
+      // Lets the server fail fast when no web client receives the command
+      if (data.requestId) {
+        void events.emit({
+          schema_id: JUPYTERLAB_COMMAND_ACK_SCHEMA_ID,
+          version: '1',
+          data: { requestId: data.requestId, client_id: clientId }
+        });
       }
 
       const result: JupyterLabCommandResult = {
