@@ -1,5 +1,7 @@
 import asyncio
 
+import pytest
+
 from jupyterlab_commands_toolkit.tools import (
     emit,
     emit_and_wait_for_result,
@@ -132,3 +134,24 @@ async def test_invalid_command(jp_serverapp):
     assert not result["success"]
     assert result["error_code"] == "invalid_command"
     assert result["error"].startswith("Invalid command at $.args")
+
+
+@pytest.mark.parametrize(
+    "jp_server_config",
+    [
+        {
+            "ServerApp": {"jpserver_extensions": {"jupyterlab_commands_toolkit": True}},
+            "CommandsToolkit": {"command_timeout": 0.5, "ack_timeout": 0.2},
+        }
+    ],
+)
+async def test_configured_timeouts(jp_serverapp):
+    connect_web_client(jp_serverapp, ack=False, result=False)
+    result = await emit_and_wait_for_result({"name": "test:command", "args": {}})
+    assert result["error_code"] == "no_web_client"
+    assert "within 0.2 seconds" in result["error"]
+
+    connect_web_client(jp_serverapp, result=False)
+    result = await emit_and_wait_for_result({"name": "test:command", "args": {}})
+    assert result["error_code"] == "timeout"
+    assert result["error"].startswith("Command timed out after 0.5 seconds")

@@ -41,9 +41,9 @@ Each web client has a unique id, which the
 The commands run in a web client, so JupyterLab must be open in a web browser.
 When no web client is connected, `execute_command` and `list_all_commands` return
 an error immediately. A connected web client also acknowledges each command it
-receives. When no web client acknowledges a command within 2 seconds, for example
-because the target web client was closed, they return an error instead of waiting
-for the full timeout.
+receives. When no web client acknowledges a command within 2 seconds (see
+[Configuration](#configuration)), for example because the target web client was
+closed, they return an error instead of waiting for the full timeout.
 
 These errors have an `error_code`, so that a caller can fall back to another
 method when the command did not reach a web client:
@@ -57,6 +57,26 @@ method when the command did not reach a web client:
 
 An error of the command itself, for example an unknown command id, has no
 `error_code`.
+
+## Configuration
+
+The timeouts are configurable, for example in `jupyter_server_config.py`:
+
+```python
+# How long to wait for the result of a command (seconds, default: 10)
+c.CommandsToolkit.command_timeout = 30
+
+# How long to wait for a web client to acknowledge a command (seconds, default: 2)
+c.CommandsToolkit.ack_timeout = 5
+```
+
+Or on the command line:
+
+```bash
+jupyter lab --CommandsToolkit.command_timeout=30 --CommandsToolkit.ack_timeout=5
+```
+
+Increase `ack_timeout` when the web clients have a slow connection to the server.
 
 ## Requirements
 

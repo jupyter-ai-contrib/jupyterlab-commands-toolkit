@@ -7,6 +7,8 @@ from typing import Any, Dict, Optional
 from jsonschema import ValidationError
 from jupyter_server.serverapp import ServerApp
 
+from .config import SETTINGS_KEY
+
 COMMAND_SCHEMA_ID = (
     "https://events.jupyter.org/jupyterlab_command_toolkit/lab_command/v1"
 )
@@ -87,21 +89,29 @@ def emit(data, wait_for_result=False):
     return request_id
 
 
-async def emit_and_wait_for_result(data, timeout=10.0, ack_timeout=2.0):
+async def emit_and_wait_for_result(data, timeout=None, ack_timeout=None):
     """
     Emit a command and wait for its result.
 
     Args:
         data: Command data to emit
-        timeout: How long to wait for a result (seconds)
+        timeout: How long to wait for a result (seconds). Defaults to the
+                 `CommandsToolkit.command_timeout` setting of the server.
         ack_timeout: How long to wait for a web client to acknowledge the
-                     command (seconds), to fail fast when none receives it
+                     command (seconds), to fail fast when none receives it.
+                     Defaults to the `CommandsToolkit.ack_timeout` setting.
 
     Returns:
         dict: Command result from the frontend. When the command does not reach
               the frontend, the dict has an "error_code": "no_web_client",
               "web_client_not_found", "timeout" or "invalid_command".
     """
+    config = ServerApp.instance().web_app.settings[SETTINGS_KEY]
+    if timeout is None:
+        timeout = config.command_timeout
+    if ack_timeout is None:
+        ack_timeout = config.ack_timeout
+
     try:
         request_id = emit(data, wait_for_result=True)
     except ValidationError as e:

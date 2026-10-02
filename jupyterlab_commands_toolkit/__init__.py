@@ -15,6 +15,8 @@ import pathlib
 
 from jupyter_server.serverapp import ServerApp
 
+from .config import SETTINGS_KEY, CommandsToolkit
+
 
 def _jupyter_labextension_paths():
     return [{"src": "labextension", "dest": "jupyterlab-commands-toolkit"}]
@@ -25,6 +27,8 @@ def _jupyter_server_extension_points():
 
 
 def _load_jupyter_server_extension(serverapp: ServerApp):
+    serverapp.web_app.settings[SETTINGS_KEY] = CommandsToolkit(parent=serverapp)
+
     command_schema_path = (
         pathlib.Path(__file__).parent / "events" / "jupyterlab-command.yml"
     )
