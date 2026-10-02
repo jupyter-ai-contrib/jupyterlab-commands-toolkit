@@ -15,6 +15,8 @@ import pathlib
 
 from jupyter_server.serverapp import ServerApp
 
+from .config import SETTINGS_KEY, CommandsToolkit
+
 
 def _jupyter_labextension_paths():
     return [{"src": "labextension", "dest": "jupyterlab-commands-toolkit"}]
@@ -25,6 +27,8 @@ def _jupyter_server_extension_points():
 
 
 def _load_jupyter_server_extension(serverapp: ServerApp):
+    serverapp.web_app.settings[SETTINGS_KEY] = CommandsToolkit(parent=serverapp)
+
     command_schema_path = (
         pathlib.Path(__file__).parent / "events" / "jupyterlab-command.yml"
     )
@@ -34,6 +38,11 @@ def _load_jupyter_server_extension(serverapp: ServerApp):
         pathlib.Path(__file__).parent / "events" / "jupyterlab-command-result.yml"
     )
     serverapp.event_logger.register_event_schema(result_schema_path)
+
+    ack_schema_path = (
+        pathlib.Path(__file__).parent / "events" / "jupyterlab-command-ack.yml"
+    )
+    serverapp.event_logger.register_event_schema(ack_schema_path)
 
     async def command_result_listener(logger, schema_id: str, data: dict) -> None:
         """
@@ -70,6 +79,21 @@ def _load_jupyter_server_extension(serverapp: ServerApp):
     )
     serverapp.event_logger.add_listener(
         schema_id=result_schema_id, listener=command_result_listener
+    )
+
+    async def command_ack_listener(logger, schema_id: str, data: dict) -> None:
+        """
+        Handle the acknowledgments of the web clients that received a command.
+        """
+        from .tools import handle_command_ack
+
+        handle_command_ack(data)
+
+    ack_schema_id = (
+        "https://events.jupyter.org/jupyterlab_command_toolkit/lab_command_ack/v1"
+    )
+    serverapp.event_logger.add_listener(
+        schema_id=ack_schema_id, listener=command_ack_listener
     )
 
     serverapp.log.info(

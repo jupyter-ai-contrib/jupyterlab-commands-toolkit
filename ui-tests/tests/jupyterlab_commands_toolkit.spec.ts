@@ -8,6 +8,9 @@ import {
 const COMMAND_SCHEMA_ID =
   'https://events.jupyter.org/jupyterlab_command_toolkit/lab_command/v1';
 
+const ACK_SCHEMA_ID =
+  'https://events.jupyter.org/jupyterlab_command_toolkit/lab_command_ack/v1';
+
 /**
  * Get the id of the web client of the page.
  */
@@ -34,6 +37,33 @@ async function emitCommand(
         data
       }),
     { schemaId: COMMAND_SCHEMA_ID, data }
+  );
+}
+
+/**
+ * Emit a command event with a request id from the page, and wait for the
+ * acknowledgment of a web client.
+ */
+function emitCommandAndWaitForAck(
+  page: IJupyterLabPageFixture,
+  data: { name: string; requestId: string; client_id?: string }
+): Promise<{ requestId: string; client_id: string }> {
+  return page.evaluate(
+    ({ commandSchemaId, ackSchemaId, data }) => {
+      const events = window.jupyterapp.serviceManager.events;
+      return new Promise<any>(resolve => {
+        events.stream.connect((sender, emission) => {
+          if (
+            emission.schema_id === ackSchemaId &&
+            emission.requestId === data.requestId
+          ) {
+            resolve(emission);
+          }
+        });
+        void events.emit({ schema_id: commandSchemaId, version: '1', data });
+      });
+    },
+    { commandSchemaId: COMMAND_SCHEMA_ID, ackSchemaId: ACK_SCHEMA_ID, data }
   );
 }
 
@@ -81,5 +111,19 @@ test.describe('web client routing', () => {
     await expect.poll(() => otherPage.sidebar.isOpen('right')).toBe(true);
 
     expect(await page.sidebar.isOpen('left')).toBe(true);
+  });
+
+  test('should acknowledge a command on the target web client', async ({
+    page
+  }) => {
+    const otherClientId = await getWebClientId(otherPage);
+
+    const ack = await emitCommandAndWaitForAck(page, {
+      name: 'application:toggle-left-area',
+      requestId: 'request-1',
+      client_id: otherClientId
+    });
+
+    expect(ack.client_id).toBe(otherClientId);
   });
 });
