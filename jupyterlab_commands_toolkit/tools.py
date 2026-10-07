@@ -104,7 +104,8 @@ async def emit_and_wait_for_result(data, timeout=None, ack_timeout=None):
     Returns:
         dict: Command result from the frontend. When the command does not reach
               the frontend, the dict has an "error_code": "no_web_client",
-              "web_client_not_found", "timeout" or "invalid_command".
+              "not_acknowledged", "web_client_not_found", "timeout" or
+              "invalid_command".
     """
     config = ServerApp.instance().web_app.settings[SETTINGS_KEY]
     if timeout is None:
@@ -141,11 +142,14 @@ async def emit_and_wait_for_result(data, timeout=None, ack_timeout=None):
             )
         client_id = data.get("client_id")
         if client_id is None:
+            # A web client with an older version of the extension runs the
+            # command without an acknowledgment, so a caller must not run it
+            # again with another method.
             error = (
-                "No JupyterLab web client received the command within "
+                "No JupyterLab web client acknowledged the command within "
                 f"{ack_timeout} seconds. {OPEN_JUPYTERLAB_HINT}"
             )
-            error_code = "no_web_client"
+            error_code = "not_acknowledged"
         else:
             error = (
                 f"The web client {client_id} did not receive the command within "
@@ -227,7 +231,8 @@ async def list_all_commands(query: Optional[str] = None) -> dict:
                   - args (dict, optional): Command argument schema
               - error (str, optional): Error message if the operation failed
               - error_code (str, optional): "no_web_client" when JupyterLab is not
-                open in a web browser, "web_client_not_found", "timeout" or
+                open in a web browser, "not_acknowledged", "web_client_not_found",
+                "timeout" or
                 "invalid_command"
 
     Examples:
@@ -271,7 +276,8 @@ async def execute_command(command_id: str, args: Optional[dict] = None) -> dict:
               - result (any): The return value from the executed command
               - error (str, optional): Error message if the command failed
               - error_code (str, optional): "no_web_client" when JupyterLab is not
-                open in a web browser, "web_client_not_found", "timeout" or
+                open in a web browser, "not_acknowledged", "web_client_not_found",
+                "timeout" or
                 "invalid_command". Absent when the command itself failed.
               - request_id (str): The unique identifier for this request
 

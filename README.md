@@ -50,7 +50,8 @@ method when the command did not reach a web client:
 
 | `error_code`           | Meaning                                                                  |
 | ---------------------- | ------------------------------------------------------------------------ |
-| `no_web_client`        | No web client is connected, or none acknowledged the command             |
+| `no_web_client`        | No web client is connected                                               |
+| `not_acknowledged`     | No web client acknowledged the command, but one can still run it         |
 | `web_client_not_found` | The target web client (see above) did not acknowledge the command        |
 | `timeout`              | A web client received the command, but sent no result before the timeout |
 | `invalid_command`      | The command does not match the event schema                              |

@@ -95,14 +95,16 @@ async def test_no_web_client(jp_serverapp):
     assert not pending_requests
 
 
-async def test_no_web_client_ack(jp_serverapp):
+async def test_command_not_acknowledged(jp_serverapp):
     connect_web_client(jp_serverapp, ack=False, result=False)
     result = await emit_and_wait_for_result(
         {"name": "test:command", "args": {}}, ack_timeout=0.5
     )
     assert not result["success"]
-    assert result["error_code"] == "no_web_client"
-    assert result["error"].startswith("No JupyterLab web client received the command")
+    assert result["error_code"] == "not_acknowledged"
+    assert result["error"].startswith(
+        "No JupyterLab web client acknowledged the command"
+    )
 
 
 async def test_target_web_client_not_connected(jp_serverapp):
@@ -148,7 +150,7 @@ async def test_invalid_command(jp_serverapp):
 async def test_configured_timeouts(jp_serverapp):
     connect_web_client(jp_serverapp, ack=False, result=False)
     result = await emit_and_wait_for_result({"name": "test:command", "args": {}})
-    assert result["error_code"] == "no_web_client"
+    assert result["error_code"] == "not_acknowledged"
     assert "within 0.2 seconds" in result["error"]
 
     connect_web_client(jp_serverapp, result=False)
