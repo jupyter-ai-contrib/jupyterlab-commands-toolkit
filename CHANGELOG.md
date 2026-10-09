@@ -2,6 +2,39 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.3.1
+
+([Full Changelog](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/compare/v0.3.0...34ee36d2fc9e776a535d9110626952cb0d554f69))
+
+### Bugs fixed
+
+- Fail fast when no web client receives a command [#44](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/pull/44) ([@jtpio](https://github.com/jtpio), [@brichet](https://github.com/brichet))
+
+### Maintenance and upkeep improvements
+
+- Switch to jupyter-builder and adopt the Jupyter ESLint plugin [#39](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/pull/39) ([@jtpio](https://github.com/jtpio))
+
+### Other merged PRs
+
+- Bump brace-expansion from 1.1.18 to 1.1.21 [#47](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/pull/47) ([@jtpio](https://github.com/jtpio))
+- Bump fast-uri from 3.1.7 to 3.1.8 [#46](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/pull/46) ([@jtpio](https://github.com/jtpio))
+- Bump dompurify from 3.4.14 to 3.4.16 in /ui-tests [#45](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/pull/45) ([@jtpio](https://github.com/jtpio))
+- Bump undici from 8.10.0 to 8.11.2 in /ui-tests [#43](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/pull/43) ([@jtpio](https://github.com/jtpio))
+- Bump fast-uri from 3.1.6 to 3.1.8 in /ui-tests [#42](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/pull/42) ([@jtpio](https://github.com/jtpio))
+- Bump minimatch from 3.1.2 to 3.1.5 [#41](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/pull/41) ([@jtpio](https://github.com/jtpio))
+- Bump picomatch from 2.3.1 to 2.3.2 [#40](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/pull/40) ([@jtpio](https://github.com/jtpio))
+
+### Contributors to this release
+
+The following people contributed discussions, new ideas, code and documentation contributions, and review.
+See [our definition of contributors](https://github-activity.readthedocs.io/en/latest/use/#how-does-this-tool-define-contributions-in-the-reports).
+
+([GitHub contributors page for this release](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/graphs/contributors?from=2026-09-16&to=2026-10-09&type=c))
+
+@brichet ([activity](https://github.com/search?q=repo%3Ajupyter-ai-contrib%2Fjupyterlab-commands-toolkit+involves%3Abrichet+updated%3A2026-09-16..2026-10-09&type=Issues)) | @jtpio ([activity](https://github.com/search?q=repo%3Ajupyter-ai-contrib%2Fjupyterlab-commands-toolkit+involves%3Ajtpio+updated%3A2026-09-16..2026-10-09&type=Issues))
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.3.0
 
 ([Full Changelog](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/compare/v0.2.0...bac491b563764ca1aff41756f9c68a52cc0f7ff3))
@@ -20,8 +53,6 @@ See [our definition of contributors](https://github-activity.readthedocs.io/en/l
 ([GitHub contributors page for this release](https://github.com/jupyter-ai-contrib/jupyterlab-commands-toolkit/graphs/contributors?from=2026-09-02&to=2026-09-16&type=c))
 
 @jtpio ([activity](https://github.com/search?q=repo%3Ajupyter-ai-contrib%2Fjupyterlab-commands-toolkit+involves%3Ajtpio+updated%3A2026-09-02..2026-09-16&type=Issues)) | @Zsailer ([activity](https://github.com/search?q=repo%3Ajupyter-ai-contrib%2Fjupyterlab-commands-toolkit+involves%3AZsailer+updated%3A2026-09-02..2026-09-16&type=Issues))
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.3.0a0
 
