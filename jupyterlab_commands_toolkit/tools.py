@@ -4,7 +4,19 @@ import uuid
 from contextvars import ContextVar
 from typing import Any, Dict, Optional
 
+from jsonschema import ValidationError
 from jupyter_server.serverapp import ServerApp
+
+from .config import SETTINGS_KEY
+
+COMMAND_SCHEMA_ID = (
+    "https://events.jupyter.org/jupyterlab_command_toolkit/lab_command/v1"
+)
+
+OPEN_JUPYTERLAB_HINT = (
+    "Open JupyterLab in a web browser, with the jupyterlab-commands-toolkit "
+    "extension enabled, and try again."
+)
 
 # Store for pending command results
 pending_requests: Dict[str, Dict[str, Any]] = {}
@@ -22,6 +34,12 @@ TOOLS = [
 ]
 
 
+class NoWebClientError(RuntimeError):
+    """
+    No web client is connected to the server to receive the commands.
+    """
+
+
 def emit(data, wait_for_result=False):
     """
     Emit an event to the frontend with optional result waiting.
@@ -32,6 +50,10 @@ def emit(data, wait_for_result=False):
 
     Returns:
         str: Request ID if wait_for_result is True, None otherwise
+
+    Raises:
+        jsonschema.ValidationError: If the event data does not match the schema
+        NoWebClientError: If wait_for_result is True and no web client is connected
     """
     server = ServerApp.instance()
 
@@ -39,54 +61,122 @@ def emit(data, wait_for_result=False):
     if client_id is not None:
         data.setdefault("client_id", client_id)
 
+    # The event logger skips the validation when the event has no listener
+    server.event_logger.schemas.validate_event(COMMAND_SCHEMA_ID, data)
+
     # Add request ID if waiting for result
     request_id = None
     if wait_for_result:
         request_id = str(uuid.uuid4())
         data["requestId"] = request_id
+        loop = asyncio.get_running_loop()
         pending_requests[request_id] = {
             "timestamp": time.time(),
             "data": data,
             "result": None,
             "completed": False,
-            "future": asyncio.get_running_loop().create_future(),
+            "ack": loop.create_future(),
+            "future": loop.create_future(),
         }
 
-    server.io_loop.call_later(
-        0.1,
-        server.event_logger.emit,
-        schema_id="https://events.jupyter.org/jupyterlab_command_toolkit/lab_command/v1",
-        data=data,
-    )
+    # The event has no listener, so emit returns None, when no web client
+    # has an events websocket open
+    emitted = server.event_logger.emit(schema_id=COMMAND_SCHEMA_ID, data=data)
+    if emitted is None and request_id is not None:
+        del pending_requests[request_id]
+        raise NoWebClientError()
 
     return request_id
 
 
-async def emit_and_wait_for_result(data, timeout=10.0):
+async def emit_and_wait_for_result(data, timeout=None, ack_timeout=None):
     """
     Emit a command and wait for its result.
 
     Args:
         data: Command data to emit
-        timeout: How long to wait for a result (seconds)
+        timeout: How long to wait for a result (seconds). Defaults to the
+                 `CommandsToolkit.command_timeout` setting of the server.
+        ack_timeout: How long to wait for a web client to acknowledge the
+                     command (seconds), to fail fast when none receives it.
+                     Defaults to the `CommandsToolkit.ack_timeout` setting.
 
     Returns:
-        dict: Command result from the frontend
+        dict: Command result from the frontend. When the command does not reach
+              the frontend, the dict has an "error_code": "no_web_client",
+              "not_acknowledged", "web_client_not_found", "timeout" or
+              "invalid_command".
     """
-    request_id = emit(data, wait_for_result=True)
+    config = ServerApp.instance().web_app.settings[SETTINGS_KEY]
+    if timeout is None:
+        timeout = config.command_timeout
+    if ack_timeout is None:
+        ack_timeout = config.ack_timeout
 
     try:
-        future = pending_requests[request_id]["future"]
-        result = await asyncio.wait_for(future, timeout=timeout)
-        return result
+        request_id = emit(data, wait_for_result=True)
+    except ValidationError as e:
+        return _failure(
+            data, f"Invalid command at {e.json_path}: {e.message}", "invalid_command"
+        )
+    except NoWebClientError:
+        return _failure(
+            data,
+            f"No JupyterLab web client is connected. {OPEN_JUPYTERLAB_HINT}",
+            "no_web_client",
+        )
+
+    request_info = pending_requests[request_id]
+    loop = asyncio.get_running_loop()
+    deadline = loop.time() + timeout
+    try:
+        # The result can also arrive first, or without an acknowledgment
+        done, _ = await asyncio.wait(
+            {request_info["ack"], request_info["future"]},
+            timeout=ack_timeout,
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+        if done:
+            return await asyncio.wait_for(
+                request_info["future"], timeout=max(deadline - loop.time(), 0)
+            )
+        client_id = data.get("client_id")
+        if client_id is None:
+            # A web client with an older version of the extension runs the
+            # command without an acknowledgment, so a caller must not run it
+            # again with another method.
+            error = (
+                "No JupyterLab web client acknowledged the command within "
+                f"{ack_timeout} seconds. {OPEN_JUPYTERLAB_HINT}"
+            )
+            error_code = "not_acknowledged"
+        else:
+            error = (
+                f"The web client {client_id} did not receive the command within "
+                f"{ack_timeout} seconds. Its browser tab may be closed or reloaded."
+            )
+            error_code = "web_client_not_found"
     except asyncio.TimeoutError:
-        return {
-            "success": False,
-            "error": f"Command timed out after {timeout} seconds",
-            "request_id": request_id,
-        }
+        error = (
+            f"Command timed out after {timeout} seconds. It may still be running "
+            "in JupyterLab, so check its effects before running it again."
+        )
+        error_code = "timeout"
     finally:
         pending_requests.pop(request_id, None)
+
+    return _failure(data, error, error_code, request_id)
+
+
+def _failure(data, error, error_code, request_id=None):
+    """
+    Log and build the result of a command that did not reach the frontend.
+    """
+    ServerApp.instance().log.warning(f"Command {data.get('name')!r} failed: {error}")
+    result = {"success": False, "error": error, "error_code": error_code}
+    if request_id is not None:
+        result["request_id"] = request_id
+    return result
 
 
 def handle_command_result(event_data):
@@ -102,6 +192,15 @@ def handle_command_result(event_data):
             future.set_result(event_data)
 
 
+def handle_command_ack(event_data):
+    """
+    Handle incoming command acknowledgments from the frontend.
+    """
+    request_info = pending_requests.get(event_data.get("requestId"))
+    if request_info and not request_info["ack"].done():
+        request_info["ack"].set_result(event_data)
+
+
 async def list_all_commands(query: Optional[str] = None) -> dict:
     """
     Retrieve a list of all available JupyterLab commands.
@@ -109,6 +208,7 @@ async def list_all_commands(query: Optional[str] = None) -> dict:
     This function emits a request to the JupyterLab frontend to retrieve all
     registered commands in the application. It waits for the response and
     returns the complete list of available commands with their metadata.
+    JupyterLab must be open in a web browser.
 
     Args:
         query (Optional[str], optional): An optional search query to filter commands.
@@ -130,6 +230,10 @@ async def list_all_commands(query: Optional[str] = None) -> dict:
                   - description (str, optional): Detailed usage information
                   - args (dict, optional): Command argument schema
               - error (str, optional): Error message if the operation failed
+              - error_code (str, optional): "no_web_client" when JupyterLab is not
+                open in a web browser, "not_acknowledged", "web_client_not_found",
+                "timeout" or
+                "invalid_command"
 
     Examples:
         >>> # Get all commands
@@ -155,7 +259,8 @@ async def execute_command(command_id: str, args: Optional[dict] = None) -> dict:
 
     This function sends a command execution request to the JupyterLab frontend
     and waits for the result. The command is identified by its unique command_id
-    and can be parameterized with optional arguments.
+    and can be parameterized with optional arguments. JupyterLab must be open in
+    a web browser.
 
     Args:
         command_id (str): The unique identifier of the JupyterLab command to execute.
@@ -170,6 +275,10 @@ async def execute_command(command_id: str, args: Optional[dict] = None) -> dict:
               - success (bool): Whether the command executed successfully
               - result (any): The return value from the executed command
               - error (str, optional): Error message if the command failed
+              - error_code (str, optional): "no_web_client" when JupyterLab is not
+                open in a web browser, "not_acknowledged", "web_client_not_found",
+                "timeout" or
+                "invalid_command". Absent when the command itself failed.
               - request_id (str): The unique identifier for this request
 
     Examples:
